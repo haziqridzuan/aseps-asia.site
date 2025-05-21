@@ -815,55 +815,57 @@ export default function ProjectDetails() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {shipments.map((shipment) => {
-                  // Support both single poId and multiple po_ids (backward compatibility)
-                  let parts: any[] = [];
-                  const po_ids = (shipment as any).po_ids;
-                  if (Array.isArray(po_ids)) {
-                    // Multi-PO mode
-                    parts = po_ids
-                      .map((poId: string) => {
-                        const po = purchaseOrders.find(po => po.id === poId);
-                        return po ? po.parts : [];
-                      })
-                      .flat();
-                  } else if (shipment.poId) {
-                    // Single PO mode
-                    const po = purchaseOrders.find(po => po.id === shipment.poId);
-                    parts = po && po.parts ? po.parts : [];
-                  }
-                  // Filter by shipment.part_ids if present
-                  if (shipment.part_ids && Array.isArray(shipment.part_ids) && shipment.part_ids.length > 0) {
-                    parts = parts.filter(part => shipment.part_ids.includes(part.id));
-                  }
-                  return [
-                    <TableRow key={shipment.id}>
-                      <TableCell>{shipment.type}</TableCell>
-                      <TableCell>{getSupplierName(shipment.supplierId)}</TableCell>
-                      <TableCell>{shipment.status}</TableCell>
-                      <TableCell>{shipment.etaDate}</TableCell>
-                      <TableCell>{shipment.etdDate}</TableCell>
-                      <TableCell>{shipment.containerNumber}</TableCell>
-                      <TableCell>{shipment.lockNumber}</TableCell>
-                    </TableRow>,
-                    <TableRow key={shipment.id + '-parts'}>
-                      <TableCell colSpan={7} className="bg-muted/50 text-sm p-2">
-                        {parts.length > 0 ? (
-                          <div className="flex flex-wrap gap-4">
-                            {parts.map(part => (
-                              <div key={part.id} className="flex items-center gap-2">
-                                <span className="font-medium">{capitalizePartName(part.name)}</span>
-                                <span className="text-muted-foreground">x{part.quantity}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">No parts</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ];
-                })}
+                {shipments
+                  .filter((shipment) => shipment.projectId === project.id)
+                  .map((shipment) => {
+                    // Support both single poId and multiple po_ids (backward compatibility)
+                    let parts: any[] = [];
+                    const po_ids = (shipment as any).po_ids;
+                    if (Array.isArray(po_ids)) {
+                      // Multi-PO mode
+                      parts = po_ids
+                        .map((poId: string) => {
+                          const po = purchaseOrders.find(po => po.id === poId);
+                          return po ? po.parts : [];
+                        })
+                        .flat();
+                    } else if (shipment.poId) {
+                      // Single PO mode
+                      const po = purchaseOrders.find(po => po.id === shipment.poId);
+                      parts = po && po.parts ? po.parts : [];
+                    }
+                    // Filter by shipment.part_ids if present
+                    if (shipment.part_ids && Array.isArray(shipment.part_ids) && shipment.part_ids.length > 0) {
+                      parts = parts.filter(part => shipment.part_ids.includes(part.id));
+                    }
+                    return [
+                      <TableRow key={shipment.id}>
+                        <TableCell>{shipment.type}</TableCell>
+                        <TableCell>{getSupplierName(shipment.supplierId)}</TableCell>
+                        <TableCell>{shipment.status}</TableCell>
+                        <TableCell>{shipment.etaDate}</TableCell>
+                        <TableCell>{shipment.etdDate}</TableCell>
+                        <TableCell>{shipment.containerNumber}</TableCell>
+                        <TableCell>{shipment.lockNumber}</TableCell>
+                      </TableRow>,
+                      <TableRow key={shipment.id + '-parts'}>
+                        <TableCell colSpan={7} className="bg-muted/50 text-sm p-2">
+                          {parts.length > 0 ? (
+                            <div className="flex flex-wrap gap-4">
+                              {parts.map(part => (
+                                <div key={part.id} className="flex items-center gap-2">
+                                  <span className="font-medium">{capitalizePartName(part.name)}</span>
+                                  <span className="text-muted-foreground">x{part.quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">No parts</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ];
+                  })}
               </TableBody>
             </Table>
           </CardContent>
