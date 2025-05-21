@@ -46,6 +46,7 @@ export interface PurchaseOrder {
   amount?: number;
   description?: string;
   parts: Part[];
+  completionDate?: string;
 }
 
 export interface Project {
@@ -344,6 +345,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           amount: po.amount,
           description: po.description,
           parts: poParts,
+          completionDate: po.completion_date || (po.status === 'Completed' ? po.deadline : undefined),
         };
       });
       
@@ -392,7 +394,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         status: shipment.status,
         notes: shipment.notes,
         lockNumber: shipment.lock_number,
-        part_ids: Array.isArray(shipment['part_ids']) ? shipment['part_ids'] : [],
+        po_ids: Array.isArray(shipment['po_ids']) ? shipment['po_ids'] : (shipment['po_ids'] ? [shipment['po_ids']] : []),
+        part_ids: Array.isArray(shipment['part_ids']) ? shipment['part_ids'] : (shipment['part_ids'] ? [shipment['part_ids']] : []),
       }));
       
       setShipments(mappedShipments);
@@ -517,6 +520,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             amount: po.amount,
             description: po.description,
             parts: poParts,
+            completionDate: po.completion_date || (po.status === 'Completed' ? po.deadline : undefined),
           };
         });
         
@@ -573,7 +577,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         status: shipment.status,
         notes: shipment.notes,
         lockNumber: shipment.lock_number,
-        part_ids: Array.isArray(shipment['part_ids']) ? shipment['part_ids'] : [],
+        po_ids: Array.isArray(shipment['po_ids']) ? shipment['po_ids'] : (shipment['po_ids'] ? [shipment['po_ids']] : []),
+        part_ids: Array.isArray(shipment['part_ids']) ? shipment['part_ids'] : (shipment['part_ids'] ? [shipment['part_ids']] : []),
       }));
       
       setShipments(mappedShipments);
@@ -879,6 +884,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         progress: po.progress || 0,
         amount: po.amount,
         description: po.description,
+        completion_date: po.completionDate || (po.status === 'Completed' ? po.deadline : null),
       }]).select();
       
       if (poError) throw poError;
@@ -927,6 +933,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         amount: po.amount,
         description: po.description,
         parts: insertedParts,
+        completionDate: po.completionDate || (po.status === 'Completed' ? po.deadline : undefined),
       };
       
       // Update local state
@@ -951,6 +958,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (poUpdate.progress !== undefined) updateData.progress = poUpdate.progress;
       if (poUpdate.amount !== undefined) updateData.amount = poUpdate.amount;
       if (poUpdate.description !== undefined) updateData.description = poUpdate.description;
+      if (poUpdate.completionDate !== undefined) updateData.completion_date = poUpdate.completionDate;
       
       const { error: poError } = await supabase
         .from('purchase_orders')

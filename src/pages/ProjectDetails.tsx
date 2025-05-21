@@ -816,10 +816,22 @@ export default function ProjectDetails() {
               </TableHeader>
               <TableBody>
                 {shipments.map((shipment) => {
-                  // Find the PO for this shipment
-                  const po = purchaseOrders.find(po => po.id === shipment.poId);
-                  // Get parts for this PO
-                  let parts = po && po.parts ? po.parts : [];
+                  // Support both single poId and multiple po_ids (backward compatibility)
+                  let parts: any[] = [];
+                  const po_ids = (shipment as any).po_ids;
+                  if (Array.isArray(po_ids)) {
+                    // Multi-PO mode
+                    parts = po_ids
+                      .map((poId: string) => {
+                        const po = purchaseOrders.find(po => po.id === poId);
+                        return po ? po.parts : [];
+                      })
+                      .flat();
+                  } else if (shipment.poId) {
+                    // Single PO mode
+                    const po = purchaseOrders.find(po => po.id === shipment.poId);
+                    parts = po && po.parts ? po.parts : [];
+                  }
                   // Filter by shipment.part_ids if present
                   if (shipment.part_ids && Array.isArray(shipment.part_ids) && shipment.part_ids.length > 0) {
                     parts = parts.filter(part => shipment.part_ids.includes(part.id));

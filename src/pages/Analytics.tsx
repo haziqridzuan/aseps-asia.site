@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,7 @@ import { ProjectFilter } from "@/components/analytics/ProjectFilter";
 import { StatusPieChart } from "@/components/analytics/StatusPieChart";
 import { BudgetSpentChart } from "@/components/analytics/BudgetSpentChart";
 import { SupplierSpendingChart } from "@/components/analytics/SupplierSpendingChart";
+import { SupplierPerformanceModern } from "@/components/analytics/SupplierPerformanceModern";
 
 export default function Analytics() {
   const { projects, suppliers, purchaseOrders } = useData();
@@ -76,25 +76,21 @@ export default function Analytics() {
   
   // Purchase Order status data for chart
   const poStatusData = useMemo(() => {
-    // Calculate the number of POs with different statuses
-    const statusCounts = {
-      "Completed": 0,
-      "Active": 0, // "In Progress" equivalent
-      "Delayed": 0
-    };
-    
-    // Count POs by status
-    filteredPOs.forEach(po => {
-      if (statusCounts.hasOwnProperty(po.status)) {
-        statusCounts[po.status as keyof typeof statusCounts]++;
-      }
+    // Get unique PO numbers from filteredPOs
+    const uniquePONumbers = [...new Set(filteredPOs.map(po => po.poNumber))];
+    // Count unique PO numbers for each status (all variants must match)
+    let completed = 0, active = 0, delayed = 0;
+    uniquePONumbers.forEach(poNumber => {
+      const pos = filteredPOs.filter(po => po.poNumber === poNumber);
+      if (pos.every(po => po.status === "Completed")) completed++;
+      else if (pos.every(po => po.status === "Active")) active++;
+      else if (pos.some(po => po.status === "Delayed")) delayed++;
     });
-    
     // Format data for chart
     return [
-      { name: "Completed", value: statusCounts.Completed, color: "#22c55e" },
-      { name: "Active", value: statusCounts.Active, color: "#3b82f6" },
-      { name: "Delayed", value: statusCounts.Delayed, color: "#ef4444" },
+      { name: "Completed", value: completed, color: "#22c55e" },
+      { name: "Active", value: active, color: "#3b82f6" },
+      { name: "Delayed", value: delayed, color: "#ef4444" },
     ].filter(item => item.value > 0);
   }, [filteredPOs]);
   
@@ -116,14 +112,9 @@ export default function Analytics() {
       projectSpentMap.set(project.id, 0);
     });
     
-    // Calculate spent for each project based on POs
+    // Calculate spent for each project based on POs (using PO amount)
     filteredPOs.forEach(po => {
-      // Sum up all parts in the PO
-      const poTotal = po.parts.reduce((sum, part) => {
-        return sum + (part.quantity * (Math.floor(Math.random() * 1000) + 100)); // Random cost per part for demo
-      }, 0);
-      
-      // Add to the project's total
+      const poTotal = po.amount || 0;
       const currentSpent = projectSpentMap.get(po.projectId) || 0;
       projectSpentMap.set(po.projectId, currentSpent + poTotal);
     });
@@ -134,7 +125,7 @@ export default function Analytics() {
       .map(([projectId, spent]) => {
         const project = projects.find(p => p.id === projectId);
         return {
-          name: project ? project.name.substring(0, 15) + (project.name.length > 15 ? "..." : "") : "Unknown",
+          name: project ? project.name : "Unknown",
           projectId,
           spent,
         };
@@ -202,35 +193,7 @@ export default function Analytics() {
       
       <div className="grid grid-cols-1 gap-6">
         {/* Supplier Performance */}
-        <Card className="card-hover">
-          <CardHeader>
-            <CardTitle>Supplier Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={supplierPerformanceData}
-                  layout="vertical"
-                  margin={{
-                    top: 20,
-                    right: 30,
-                    left: 90,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" domain={[0, 100]} />
-                  <YAxis dataKey="name" type="category" width={80} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="onTimeDelivery" name="On-Time Delivery (%)" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="rating" name="Rating (out of 5)" fill="#f59e0b" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <SupplierPerformanceModern data={supplierPerformanceData} />
         
         {/* Budget Spent Analysis - Single bar per project */}
         <BudgetSpentChart spentByProject={spentByProject} budgetColors={budgetColors} />

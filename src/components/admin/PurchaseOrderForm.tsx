@@ -36,7 +36,7 @@ export default function PurchaseOrderForm({
   const { suppliers, projects, addPurchaseOrder, updatePurchaseOrder } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [formData, setFormData] = useState<Omit<PurchaseOrder, "id">>({
+  const [formData, setFormData] = useState<Omit<PurchaseOrder, "id"> & { completionDate?: string }>({
     poNumber: "",
     projectId: "",
     supplierId: "",
@@ -47,6 +47,7 @@ export default function PurchaseOrderForm({
     amount: 0,
     description: "",
     parts: [{ id: `part-${Date.now()}`, name: "", quantity: 1, status: "Not Started", progress: 0 }],
+    completionDate: undefined,
   });
   
   useEffect(() => {
@@ -65,6 +66,9 @@ export default function PurchaseOrderForm({
           ...part,
           progress: part.progress || 0
         })),
+        completionDate: purchaseOrder.completionDate
+          ? purchaseOrder.completionDate.substring(0, 10)
+          : (purchaseOrder.status === "Completed" ? purchaseOrder.deadline.substring(0, 10) : undefined),
       });
     } else {
       // Reset form for new PO
@@ -79,6 +83,7 @@ export default function PurchaseOrderForm({
         amount: 0,
         description: "",
         parts: [{ id: `part-${Date.now()}`, name: "", quantity: 1, status: "Not Started", progress: 0 }],
+        completionDate: undefined,
       });
     }
   }, [purchaseOrder, open]);
@@ -288,6 +293,19 @@ export default function PurchaseOrderForm({
                 required
               />
             </div>
+            
+            {formData.status === "Completed" && (
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="completionDate">Date Completion</Label>
+                <Input
+                  id="completionDate"
+                  type="date"
+                  value={formData.completionDate || ""}
+                  onChange={e => handleChange("completionDate", e.target.value)}
+                  required={formData.status === "Completed"}
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="amount">PO Value</Label>

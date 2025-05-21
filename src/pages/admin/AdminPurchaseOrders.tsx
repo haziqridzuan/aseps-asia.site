@@ -184,7 +184,7 @@ export default function AdminPurchaseOrders() {
                 <TableHead>Value</TableHead>
                 <TableHead>Issue Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Parts</TableHead>
+                <TableHead>Completion Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -218,7 +218,7 @@ export default function AdminPurchaseOrders() {
                         {po.status}
                       </span>
                     </TableCell>
-                    <TableCell>{po.parts.length}</TableCell>
+                    <TableCell>{po.completionDate ? format(new Date(po.completionDate), "MMM d, yyyy") : "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useData } from "@/contexts/DataContext";
+import { useData, Part } from "@/contexts/DataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
@@ -28,7 +28,7 @@ interface Shipment {
   type: string;
   projectId: string;
   supplierId: string;
-  poId?: string;
+  po_ids?: string[];
   partId?: string;
   shippedDate: string;
   etdDate: string;
@@ -98,6 +98,7 @@ export default function ShipmentForm({
     status: "In Transit",
     notes: "",
     lockNumber: "",
+    po_ids: [],
   });
   
   // Add state for part selection
@@ -120,12 +121,12 @@ export default function ShipmentForm({
           
           if (data) {
             // Map database fields to Shipment interface fields
-            setFormData({
+            const mappedShipment = {
               id: data.id,
               type: data.type || "Air Freight",
               projectId: data.project_id || "",
               supplierId: data.supplier_id || "",
-              poId: data.po_id,
+              po_ids: Array.isArray(data["po_ids"]) ? data["po_ids"] : [],
               partId: data.part_id,
               shippedDate: data.shipped_date,
               etdDate: data.etd_date,
@@ -137,8 +138,10 @@ export default function ShipmentForm({
               status: data.status || "In Transit",
               notes: data.notes,
               lockNumber: data.lock_number,
-              part_ids: data.part_ids,
-            });
+              part_ids: Array.isArray(data["part_ids"]) ? data["part_ids"] : [],
+            };
+            setFormData(mappedShipment);
+            setShipment(mappedShipment);
           }
         } catch (error) {
           console.error("Error loading shipment:", error);
@@ -152,7 +155,7 @@ export default function ShipmentForm({
             ...prev,
             projectId: po.projectId,
             supplierId: po.supplierId,
-            poId
+            po_ids: [po.id]
           }));
         }
       }
@@ -177,39 +180,51 @@ export default function ShipmentForm({
           status: "In Transit",
           notes: "",
           lockNumber: "",
+          po_ids: [],
         });
       }
     }
   }, [open, shipmentId]);
   
-  // Update PO parts when PO changes
+  // When POs change, update poParts and filter selectedPartIds if needed
   useEffect(() => {
-    if (formData.poId) {
-      const po = purchaseOrders.find(p => p.id === formData.poId);
-      setPoParts(po ? po.parts : []);
-      if (allPartsSelected) {
-        setSelectedPartIds(po ? po.parts.map(part => part.id) : []);
-      }
+    if (formData.po_ids && formData.po_ids.length > 0) {
+      const selectedPOs = purchaseOrders.filter(po => formData.po_ids!.includes(po.id));
+      const allParts = selectedPOs.flatMap(po => po.parts);
+      setPoParts(allParts);
+
+      // If any selected part is no longer in the available parts, remove it
+      setSelectedPartIds(prev =>
+        prev.filter(id => allParts.some(part => part.id === id))
+      );
+      // Optionally, update allPartsSelected if all parts are selected
+      setAllPartsSelected(
+        allParts.length > 0 &&
+        selectedPartIds.length === allParts.length &&
+        allParts.every(part => selectedPartIds.includes(part.id))
+      );
     } else {
       setPoParts([]);
       setSelectedPartIds([]);
+      setAllPartsSelected(false);
     }
-  }, [formData.poId, purchaseOrders, allPartsSelected]);
+    // eslint-disable-next-line
+  }, [formData.po_ids, purchaseOrders]);
   
-  // Load part_ids when editing
+  // Add a new effect that restores selectedPartIds and allPartsSelected from formData.part_ids and poParts
   useEffect(() => {
-    if (shipmentId && shipment) {
-      if (shipment.part_ids && Array.isArray(shipment.part_ids)) {
-        setSelectedPartIds(shipment.part_ids);
-        setAllPartsSelected(
-          shipment.part_ids.length === (poParts ? poParts.length : 0)
-        );
-      } else {
-        setAllPartsSelected(true);
-        setSelectedPartIds(poParts ? poParts.map(p => p.id) : []);
-      }
+    if (formData.part_ids && Array.isArray(formData.part_ids)) {
+      setSelectedPartIds(formData.part_ids);
+      setAllPartsSelected(
+        poParts.length > 0 &&
+        formData.part_ids.length === poParts.length &&
+        poParts.every(part => formData.part_ids.includes(part.id))
+      );
+    } else {
+      setAllPartsSelected(false);
+      setSelectedPartIds([]);
     }
-  }, [shipmentId, shipment, poParts]);
+  }, [formData.part_ids, poParts]);
   
   const handleChange = (field: keyof Shipment, value: any) => {
     // Convert "none" value to undefined for fields that can be null
@@ -229,7 +244,7 @@ export default function ShipmentForm({
         type: formData.type || "Air Freight",
         project_id: formData.projectId,
         supplier_id: formData.supplierId,
-        po_id: formData.poId === "none" ? null : formData.poId,
+        po_ids: formData.po_ids || [],
         part_id: formData.partId,
         shipped_date: formData.shippedDate,
         etd_date: formData.etdDate,
@@ -413,25 +428,31 @@ export default function ShipmentForm({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="po">Purchase Order</Label>
-              <Select
-                  value={formData.poId || "none"}
-                  onValueChange={(value) => handleChange("poId", value)}
-              >
-                <SelectTrigger id="po">
-                  <SelectValue placeholder="Select a PO (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                  {purchaseOrders
-                    .filter(po => po.supplierId === formData.supplierId)
-                    .map((po) => (
-                        <SelectItem key={po.id} value={po.id || 'default-value'}>
-                          {po.poNumber || 'Unnamed PO'}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Label>Select Purchase Orders</Label>
+              <div className="border rounded p-2 max-h-40 overflow-y-auto">
+                {purchaseOrders
+                  .filter(po => po.supplierId === formData.supplierId && po.projectId === formData.projectId)
+                  .map(po => (
+                    <div key={po.id} className="flex items-center gap-2 mb-1">
+                      <input
+                        type="checkbox"
+                        checked={formData.po_ids?.includes(po.id) || false}
+                        onChange={e => {
+                          setFormData(prev => ({
+                            ...prev,
+                            po_ids: e.target.checked
+                              ? [...(prev.po_ids || []), po.id]
+                              : (prev.po_ids || []).filter(id => id !== po.id)
+                          }));
+                        }}
+                      />
+                      <span>{po.poNumber} {po.description ? `- ${po.description}` : ''}</span>
+                    </div>
+                  ))}
+                {purchaseOrders.filter(po => po.supplierId === formData.supplierId && po.projectId === formData.projectId).length === 0 && (
+                  <span className="text-muted-foreground">No POs found for this project and supplier.</span>
+                )}
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -556,7 +577,7 @@ export default function ShipmentForm({
           </div>
           
           <div className="space-y-2">
-            <Label>All parts in Purchase Order</Label>
+            <Label>All parts in Purchase Orders</Label>
             <input
               type="checkbox"
               checked={allPartsSelected}

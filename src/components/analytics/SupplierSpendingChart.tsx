@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,8 +7,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  LabelList
 } from "recharts";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { PurchaseOrder, Supplier } from "@/contexts/DataContext";
@@ -56,31 +55,16 @@ export function SupplierSpendingChart({ purchaseOrders, suppliers }: SupplierSpe
   const spentBySupplier = suppliers.map(supplier => {
     // Get all POs for this supplier
     const supplierPOs = filteredPOs.filter(po => po.supplierId === supplier.id);
-    
-    // Calculate total spent from these POs
-    const totalSpent = supplierPOs.reduce((sum, po) => {
-      // Sum up all parts in the PO
-      const poTotal = po.parts.reduce((partSum, part) => {
-        return partSum + (part.quantity * (Math.floor(Math.random() * 1000) + 100)); // Random cost per part for demo
-      }, 0);
-      
-      return sum + poTotal;
-    }, 0);
-    
+    // Calculate total spent from these POs using PO amount
+    const totalSpent = supplierPOs.reduce((sum, po) => sum + (po.amount || 0), 0);
     return {
-      name: supplier.name.length > 15 ? supplier.name.substring(0, 15) + "..." : supplier.name,
+      name: supplier.name, // show full name
       supplierId: supplier.id,
       spent: totalSpent,
     };
-  }).filter(item => item.spent > 0) // Only include suppliers with spent > 0
-    .sort((a, b) => b.spent - a.spent) // Sort by spent in descending order
-    .slice(0, 8); // Show top 8 suppliers
-
-  // Generate colors for supplier chart
-  const supplierColors = [
-    "#3b82f6", "#22c55e", "#f59e0b", "#ef4444", 
-    "#8b5cf6", "#06b6d4", "#ec4899", "#10b981"
-  ];
+  }).filter(item => item.spent > 0)
+    .sort((a, b) => b.spent - a.spent)
+    .slice(0, 8);
 
   return (
     <Card className="card-hover">
@@ -89,28 +73,37 @@ export function SupplierSpendingChart({ purchaseOrders, suppliers }: SupplierSpe
         <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[420px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={spentBySupplier}
               margin={{
                 top: 20,
-                right: 30,
-                left: 20,
-                bottom: 60,
+                right: 40,
+                left: 40,
+                bottom: 80,
               }}
+              barCategoryGap={32}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={70} />
-              <YAxis />
+              <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" height={90} tick={{ fontSize: 15, fontWeight: 600 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 14 }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Amount Spent']} />
-              <Legend />
-              <Bar 
-                dataKey="spent" 
-                name="Amount Spent" 
-                fill={supplierColors[0]}
-                radius={[4, 4, 0, 0]} 
-              />
+              <Bar
+                dataKey="spent"
+                name="Amount Spent"
+                fill="url(#supplierGradientOrange)"
+                radius={[12, 12, 0, 0]}
+                barSize={40}
+              >
+                <LabelList dataKey="spent" position="top" formatter={(v: number) => `$${v.toLocaleString()}`} style={{ fontWeight: 700, fill: '#FF6A00', fontSize: 16, textShadow: '0 1px 4px #fff' }} />
+              </Bar>
+              <defs>
+                <linearGradient id="supplierGradientOrange" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#FFD600" />
+                  <stop offset="100%" stopColor="#FF6A00" />
+                </linearGradient>
+              </defs>
             </BarChart>
           </ResponsiveContainer>
         </div>
