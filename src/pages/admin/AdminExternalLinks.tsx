@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +27,8 @@ export default function AdminExternalLinks() {
   const { externalLinks, projects, suppliers, deleteExternalLink } = useData();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
+  const [projectFilter, setProjectFilter] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState<ExternalLink | undefined>(undefined);
   
@@ -38,8 +39,10 @@ export default function AdminExternalLinks() {
       link.url.toLowerCase().includes(search.toLowerCase());
     
     const matchesType = typeFilter ? link.type === typeFilter : true;
+    const matchesSupplier = supplierFilter ? link.supplierId === supplierFilter : true;
+    const matchesProject = projectFilter ? link.projectId === projectFilter : true;
     
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesSupplier && matchesProject;
   });
   
   const handleDeleteLink = (linkId: string) => {
@@ -82,7 +85,7 @@ export default function AdminExternalLinks() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Manage External Links</h1>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -93,6 +96,40 @@ export default function AdminExternalLinks() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          
+          <Select
+            value={supplierFilter || "all"}
+            onValueChange={(value) => setSupplierFilter(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Supplier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Suppliers</SelectItem>
+              {suppliers.map((supplier) => (
+                <SelectItem key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={projectFilter || "all"}
+            onValueChange={(value) => setProjectFilter(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Select
             value={typeFilter || "all"}

@@ -125,4 +125,18 @@
   .status-badge-po {
     @apply bg-blue-500 text-white shadow-[0_0_8px_2px_rgba(59,130,246,0.4)] dark:bg-blue-600 dark:text-white dark:shadow-[0_0_12px_4px_rgba(59,130,246,0.7)];
   }
+  .status-badge-delayed {
+    background: #ef4444 !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 0 8px 2px rgba(239,68,68,0.4);
+    border: none !important;
+  }
+  .status-badge-completed {
+    background: #22c55e !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 0 8px 2px rgba(34,197,94,0.4);
+    border: none !important;
+  }
 }

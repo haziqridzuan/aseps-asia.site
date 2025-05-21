@@ -1,4 +1,3 @@
-
 import { useData } from "@/contexts/DataContext";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ProjectStatusChart } from "@/components/dashboard/ProjectStatusChart";
@@ -10,24 +9,68 @@ import { ChartBar, Package, File, Users } from "lucide-react";
 export default function Dashboard() {
   const { projects, suppliers, clients, purchaseOrders } = useData();
   
+  // Helper: get effective PO status (delayed if deadline passed and not completed)
+  const getEffectiveStatus = (po) => {
+    if (po.status === "Completed") return "Completed";
+    const today = new Date();
+    const deadline = new Date(po.deadline);
+    return today > deadline ? "Delayed" : po.status;
+  };
+
   // Calculate dashboard metrics
   const activeProjects = projects.filter(p => p.status === "In Progress").length;
   const completedProjects = projects.filter(p => p.status === "Completed").length;
   
-  // Count unique PO numbers for each status
+  // Count unique PO numbers for each status (using effective status)
   const uniquePONumbers = [...new Set(purchaseOrders.map(po => po.poNumber))];
   const activePOCount = uniquePONumbers.filter(poNumber => 
-    purchaseOrders.some(po => po.poNumber === poNumber && po.status === "Active")
+    purchaseOrders.some(po => po.poNumber === poNumber && getEffectiveStatus(po) === "Active")
   ).length;
+  // Count a PO as completed only if all POs with the same PO number are completed
   const completedPOCount = uniquePONumbers.filter(poNumber => 
-    purchaseOrders.every(po => po.poNumber === poNumber && po.status === "Completed")
+    purchaseOrders.filter(po => po.poNumber === poNumber).every(po => getEffectiveStatus(po) === "Completed")
   ).length;
   const delayedPOCount = uniquePONumbers.filter(poNumber => 
-    purchaseOrders.some(po => po.poNumber === poNumber && po.status === "Delayed")
+    purchaseOrders.some(po => po.poNumber === poNumber && getEffectiveStatus(po) === "Delayed")
   ).length;
   
   const activeSuppliers = suppliers.length;
   
+  // --- Delayed POs trend calculation ---
+  // Helper: get month and year from date
+  const getMonthYear = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.getFullYear() + '-' + (d.getMonth() + 1);
+  };
+  // Get last full month and previous month
+  const today = new Date();
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const prevMonth = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+  const lastMonthStr = lastMonth.getFullYear() + '-' + (lastMonth.getMonth() + 1);
+  const prevMonthStr = prevMonth.getFullYear() + '-' + (prevMonth.getMonth() + 1);
+  // Count delayed POs with deadline in last month and previous month
+  const delayedPOsLastMonth = purchaseOrders.filter(po => {
+    return getEffectiveStatus(po) === "Delayed" && getMonthYear(po.deadline) === lastMonthStr;
+  });
+  const delayedPOsPrevMonth = purchaseOrders.filter(po => {
+    return getEffectiveStatus(po) === "Delayed" && getMonthYear(po.deadline) === prevMonthStr;
+  });
+  const lastMonthCount = delayedPOsLastMonth.length;
+  const prevMonthCount = delayedPOsPrevMonth.length;
+  // Calculate trend percentage
+  let delayedTrendValue = 0;
+  let delayedTrendPositive = false;
+  if (prevMonthCount === 0 && lastMonthCount > 0) {
+    delayedTrendValue = 100;
+    delayedTrendPositive = false;
+  } else if (prevMonthCount === 0 && lastMonthCount === 0) {
+    delayedTrendValue = 0;
+    delayedTrendPositive = false;
+  } else {
+    delayedTrendValue = Math.round(((lastMonthCount - prevMonthCount) / prevMonthCount) * 100);
+    delayedTrendPositive = delayedTrendValue < 0;
+  }
+
   // Project status data for chart
   const projectStatusData = [
     { name: "In Progress", value: projects.filter(p => p.status === "In Progress").length, color: "#3b82f6" },
@@ -79,7 +122,7 @@ export default function Dashboard() {
         <StatCard 
           title="Delayed POs" 
           value={delayedPOCount}
-          trend={{ value: 15, positive: false }} 
+          trend={{ value: Math.abs(delayedTrendValue), positive: delayedTrendPositive }} 
         />
         <StatCard 
           title="Completion Rate" 

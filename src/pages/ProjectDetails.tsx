@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, Ship, Package, ChevronDown } from "lucide-react";
+import { ChevronLeft, Ship, Package, ChevronDown, Link as LinkIcon } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { PartsProgressPieChart } from "@/components/dashboard/PartsProgressPieChart";
@@ -45,8 +45,9 @@ export default function ProjectDetails() {
   const activePOs = uniquePONumbers.filter(poNumber => 
     projectPOs.some(po => po.poNumber === poNumber && po.status === "Active")
   ).length;
+  // Count a PO as completed only if all POs with the same PO number are completed
   const completedPOs = uniquePONumbers.filter(poNumber => 
-    projectPOs.every(po => po.poNumber === poNumber && po.status === "Completed")
+    projectPOs.filter(po => po.poNumber === poNumber).every(po => po.status === "Completed")
   ).length;
   const delayedPOs = uniquePONumbers.filter(poNumber => 
     projectPOs.some(po => po.poNumber === poNumber && po.status === "Delayed")
@@ -85,9 +86,11 @@ export default function ProjectDetails() {
   // Function to get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
-      case "Completed":
       case "Delayed":
+        return "status-badge-delayed"; // red fill, glow
+      case "Completed":
+        return "status-badge-completed"; // green fill, glow
+      case "Active":
         return "status-badge-po";
       case "Not Started":
         return "status-badge-not-started";
@@ -104,6 +107,14 @@ export default function ProjectDetails() {
       default:
         return "bg-gray-400 text-white";
     }
+  };
+  
+  // Function to check if PO is delayed
+  const getEffectiveStatus = (po: any) => {
+    if (po.status === "Completed") return "Completed";
+    const today = new Date();
+    const deadline = new Date(po.deadline);
+    return today > deadline ? "Delayed" : po.status;
   };
   
   // Group POs by poNumber
@@ -169,7 +180,7 @@ export default function ProjectDetails() {
     const matchesStatus = poStatus === "" || po.status === poStatus;
     const matchesDeadline = poDeadline === "" || (po.deadline && po.deadline.startsWith(poDeadline));
     return matchesSearch && matchesSupplier && matchesStatus && matchesDeadline;
-  });
+  }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
   
   // --- Parts Progress Table Filter State ---
   const [partPoNumber, setPartPoNumber] = useState("");
@@ -198,7 +209,8 @@ export default function ProjectDetails() {
       const matchesStatus = partStatus === "" || part.status === partStatus;
       const matchesDeadline = partDeadline === "" || (po.deadline && po.deadline.startsWith(partDeadline));
       return matchesPoNumber && matchesPoDescription && matchesPartName && matchesSupplier && matchesStatus && matchesDeadline;
-    });
+    })
+    .sort((a, b) => new Date(a.po.deadline).getTime() - new Date(b.po.deadline).getTime());
   
   // Utility to capitalize each word in part name, preserving numbers and dashes
   function capitalizePartName(name: string) {
@@ -366,16 +378,18 @@ export default function ProjectDetails() {
               <TableBody>
                 {Object.entries(groupedPOs).length > 0 ? (
                   Object.entries(groupedPOs).map(([poNumber, poList]) => {
-                    const totalParts = poList.reduce((sum, po) => sum + po.parts.reduce((s, p) => s + (p.quantity || 0), 0), 0);
-                    const uniqueSuppliers = [...new Set(poList.map(po => getSupplierName(po.supplierId)))].join(", ");
-                    const statuses = [...new Set(poList.map(po => po.status))].join(", ");
-                    const issueDates = poList.map(po => po.issuedDate).sort();
-                    const deadlines = poList.map(po => po.deadline).sort();
-                    const descriptions = poList.map(po => po.description || "No description");
+                    // Sort poList by deadline ascending (nearest first)
+                    const sortedPoList = [...poList].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+                    const totalParts = sortedPoList.reduce((sum, po) => sum + po.parts.reduce((s, p) => s + (p.quantity || 0), 0), 0);
+                    const uniqueSuppliers = [...new Set(sortedPoList.map(po => getSupplierName(po.supplierId)))].join(", ");
+                    const statuses = [...new Set(sortedPoList.map(po => po.status))].join(", ");
+                    const issueDates = sortedPoList.map(po => po.issuedDate).sort();
+                    const deadlines = sortedPoList.map(po => po.deadline).sort();
+                    const descriptions = sortedPoList.map(po => po.description || "No description");
                     const hasMultipleDescriptions = descriptions.filter((v, i, a) => a.indexOf(v) === i).length > 1;
-                    const allSameSupplier = poList.every(p => getSupplierName(p.supplierId) === getSupplierName(poList[0].supplierId));
-                    const allSameIssueDate = poList.every(p => p.issuedDate === poList[0].issuedDate);
-                    const allSameDeadline = poList.every(p => p.deadline === poList[0].deadline);
+                    const allSameSupplier = sortedPoList.every(p => getSupplierName(p.supplierId) === getSupplierName(sortedPoList[0].supplierId));
+                    const allSameIssueDate = sortedPoList.every(p => p.issuedDate === sortedPoList[0].issuedDate);
+                    const allSameDeadline = sortedPoList.every(p => p.deadline === sortedPoList[0].deadline);
                     if (!hasMultipleDescriptions) {
                       return (
                         <TableRow key={poNumber} className="hover:bg-secondary/50 transition-colors animate-fade-in">
@@ -384,8 +398,8 @@ export default function ProjectDetails() {
                           <TableCell>{descriptions[0]}</TableCell>
                           <TableCell>{uniqueSuppliers}</TableCell>
                           <TableCell>
-                            <Badge className={getStatusColor(poList[0].status)}>
-                              {poList[0].status}
+                            <Badge className={getStatusColor(getEffectiveStatus(sortedPoList[0]))}>
+                              {getEffectiveStatus(sortedPoList[0])}
                             </Badge>
                           </TableCell>
                           <TableCell>{totalParts} parts</TableCell>
@@ -399,7 +413,7 @@ export default function ProjectDetails() {
                         <>
                           <TableRow>
                             <TableCell className="font-medium">
-                              {poNumber} <span className="ml-2 text-xs text-muted-foreground">({poList.length} variants)</span>
+                              {poNumber} <span className="ml-2 text-xs text-muted-foreground">({sortedPoList.length} variants)</span>
                             </TableCell>
                             <TableCell colSpan={5}></TableCell>
                             <TableCell className="text-right">
@@ -412,16 +426,16 @@ export default function ProjectDetails() {
                           </TableRow>
                           <CollapsiblePrimitive.CollapsibleContent asChild>
                             <>
-                              {poList.map((po, idx) => (
+                              {sortedPoList.map((po, idx) => (
                                 <TableRow key={po.id} className="hover:bg-secondary/50 transition-colors animate-fade-in">
                                   {idx === 0 && (
-                                    <TableCell rowSpan={poList.length} className="text-center align-middle font-medium">
+                                    <TableCell rowSpan={sortedPoList.length} className="text-center align-middle font-medium">
                                       {poNumber}
                                     </TableCell>
                                   )}
                                   {allSameIssueDate ? (
                                     idx === 0 ? (
-                                      <TableCell rowSpan={poList.length} className="text-center align-middle">
+                                      <TableCell rowSpan={sortedPoList.length} className="text-center align-middle">
                                         {new Date(po.issuedDate).toLocaleDateString()}
                                       </TableCell>
                                     ) : null
@@ -431,7 +445,7 @@ export default function ProjectDetails() {
                                   <TableCell>{po.description || "No description"}</TableCell>
                                   {allSameSupplier ? (
                                     idx === 0 ? (
-                                      <TableCell rowSpan={poList.length} className="text-center align-middle">
+                                      <TableCell rowSpan={sortedPoList.length} className="text-center align-middle">
                                         {getSupplierName(po.supplierId)}
                                       </TableCell>
                                     ) : null
@@ -439,14 +453,14 @@ export default function ProjectDetails() {
                                     <TableCell>{getSupplierName(po.supplierId)}</TableCell>
                                   )}
                                   <TableCell>
-                                    <Badge className={getStatusColor(po.status)}>
-                                      {po.status}
+                                    <Badge className={getStatusColor(getEffectiveStatus(po))}>
+                                      {getEffectiveStatus(po)}
                                     </Badge>
                                   </TableCell>
                                   <TableCell>{po.parts.reduce((s, p) => s + (p.quantity || 0), 0)} parts</TableCell>
                                   {allSameDeadline ? (
                                     idx === 0 ? (
-                                      <TableCell rowSpan={poList.length} className="text-center align-middle">
+                                      <TableCell rowSpan={sortedPoList.length} className="text-center align-middle">
                                         {new Date(po.deadline).toLocaleDateString()}
                                       </TableCell>
                                     ) : null
@@ -486,7 +500,7 @@ export default function ProjectDetails() {
                 <input
                   type="text"
                   placeholder="PO Number or Description"
-                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={poSearch}
                   onChange={e => setPoSearch(e.target.value)}
                 />
@@ -494,7 +508,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Supplier</label>
                 <select
-                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={poSupplier}
                   onChange={e => setPoSupplier(e.target.value)}
                 >
@@ -507,7 +521,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
                 <select
-                  className="input input-bordered w-full min-w-[120px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[120px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={poStatus}
                   onChange={e => setPoStatus(e.target.value)}
                 >
@@ -521,7 +535,7 @@ export default function ProjectDetails() {
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Deadline</label>
                 <input
                   type="date"
-                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={poDeadline}
                   onChange={e => setPoDeadline(e.target.value)}
                 />
@@ -551,7 +565,7 @@ export default function ProjectDetails() {
                       <TableCell>{po.description || '-'}</TableCell>
                       <TableCell>{getSupplierName(po.supplierId)}</TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(po.status)}>{po.status}</Badge>
+                        <Badge className={getStatusColor(getEffectiveStatus(po))}>{getEffectiveStatus(po)}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -584,7 +598,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">PO Number</label>
                 <select
-                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partPoNumber}
                   onChange={e => {
                     setPartPoNumber(e.target.value);
@@ -601,7 +615,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">PO Description</label>
                 <select
-                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partPoDescription}
                   onChange={e => setPartPoDescription(e.target.value)}
                 >
@@ -614,7 +628,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Part Name</label>
                 <select
-                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[180px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partSearch}
                   onChange={e => setPartSearch(e.target.value)}
                 >
@@ -627,7 +641,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Supplier</label>
                 <select
-                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partSupplier}
                   onChange={e => setPartSupplier(e.target.value)}
                 >
@@ -640,7 +654,7 @@ export default function ProjectDetails() {
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
                 <select
-                  className="input input-bordered w-full min-w-[120px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[120px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partStatus}
                   onChange={e => setPartStatus(e.target.value)}
                 >
@@ -657,7 +671,7 @@ export default function ProjectDetails() {
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Deadline</label>
                 <input
                   type="date"
-                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border"
+                  className="input input-bordered w-full min-w-[140px] px-2 py-1 rounded border dark:bg-gray-800 dark:text-white dark:border-gray-600"
                   value={partDeadline}
                   onChange={e => setPartDeadline(e.target.value)}
                 />
@@ -683,7 +697,7 @@ export default function ProjectDetails() {
                     <TableCell>{part.quantity}</TableCell>
                     <TableCell>{getSupplierName(po.supplierId)}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(part.status)}>{part.status}</Badge>
+                      <Badge className={getStatusColor(getEffectiveStatus(part))}>{getEffectiveStatus(part)}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -711,36 +725,62 @@ export default function ProjectDetails() {
           </CardHeader>
           <CardContent>
             {upcomingDeadlines.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-8">
                 {upcomingDeadlines.slice(0, 5).map((po) => {
                   const daysRemaining = calculateDaysRemaining(po.deadline);
                   return (
-                    <div key={po.id} className="flex items-center justify-between border-b pb-2">
-                      <div>
-                        <p className="font-medium">
+                    <div key={po.id} className="flex flex-row items-start justify-between border-b pb-6 gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-base mb-2">
                           {po.poNumber} - {getSupplierName(po.supplierId)}
-                        </p>
-                        <div className="flex flex-col space-y-1">
-                          {po.parts.map(part => (
-                            <div key={part.id} className="flex items-center text-sm">
-                              <Badge variant="outline" className="mr-2">
-                                {capitalizePartName(part.name)}
-                              </Badge>
-                              <Badge className={getStatusColor(part.status)}>
-                                {part.status}
-                              </Badge>
-                            </div>
-                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {po.parts.map(part => {
+                            const status = getEffectiveStatus(part);
+                            const statusColor = getStatusColor(status);
+                            // Map status badge class to color
+                            let badgeColor = '#3b82f6'; // default blue
+                            if (statusColor.includes('status-badge-delayed')) badgeColor = '#ef4444';
+                            else if (statusColor.includes('status-badge-completed')) badgeColor = '#22c55e';
+                            else if (statusColor.includes('status-badge-po')) badgeColor = '#3b82f6';
+                            else if (statusColor.includes('status-badge-manufacturing')) badgeColor = '#3b82f6';
+                            else if (statusColor.includes('status-badge-not-started')) badgeColor = '#f59e0b';
+                            else if (statusColor.includes('status-badge-preparation')) badgeColor = '#b983ff';
+                            else if (statusColor.includes('status-badge-purchasing')) badgeColor = '#bdbdbd';
+                            else if (statusColor.includes('status-badge-ready-to-check')) badgeColor = '#10b981';
+                            else if (statusColor.includes('status-badge-finished')) badgeColor = '#22c55e';
+                            return (
+                              <div key={part.id} className="flex items-center gap-0 mb-2">
+                                <Badge variant="outline" className="text-sm px-2 py-1 font-medium shadow-none rounded-full">
+                                  {capitalizePartName(part.name)}
+                                </Badge>
+                                <span
+                                  className="inline-block"
+                                  style={{
+                                    height: '2px',
+                                    width: '32px',
+                                    background: badgeColor,
+                                    margin: '0 0.25rem',
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <Badge className={statusColor + " text-xs px-2 py-1 font-semibold rounded-full"}>
+                                  {status}
+                                </Badge>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm">{new Date(po.deadline).toLocaleDateString()}</p>
+                      <div className="flex flex-col items-end min-w-[110px]">
+                        <span className="text-sm font-medium mb-1">{new Date(po.deadline).toLocaleDateString()}</span>
                         <Badge className={
-                          daysRemaining < 7 ? "bg-red-500" : 
-                          daysRemaining < 14 ? "bg-amber-500" : 
-                          "bg-green-500"
+                          daysRemaining < 0 ? "bg-red-500 text-white" :
+                          daysRemaining < 7 ? "bg-red-500 text-white" :
+                          daysRemaining < 14 ? "bg-amber-500 text-white" :
+                          "bg-green-500 text-white"
                         }>
-                          {daysRemaining} days left
+                          {daysRemaining < 0 ? `${daysRemaining} days left` : `${daysRemaining} days left`}
                         </Badge>
                       </div>
                     </div>

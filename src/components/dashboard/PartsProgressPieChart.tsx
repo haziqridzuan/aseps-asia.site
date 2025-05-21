@@ -150,8 +150,8 @@ export function PartsProgressPieChart({ data }: PartsProgressPieChartProps) {
                   className="w-3 h-3 rounded-full inline-block shadow"
                   style={{ backgroundColor: status.color, boxShadow: `0 0 6px 2px ${status.color}55` }}
                 ></span>
-                <span className="text-sm text-gray-700 flex-1">{status.name}</span>
-                <span className="text-sm font-semibold tabular-nums">{status.value}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200 flex-1">{status.name}</span>
+                <span className="text-sm font-semibold tabular-nums dark:text-gray-100">{status.value}</span>
               </div>
             ))}
           </div>

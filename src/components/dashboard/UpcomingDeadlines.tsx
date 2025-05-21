@@ -101,10 +101,13 @@ export function UpcomingDeadlines() {
                             key={part.id} 
                             variant="outline" 
                             className={
-                              part.status === "Completed" ? "border-green-500 text-green-700" :
-                              part.status === "Delayed" ? "border-red-500 text-red-700" :
-                              part.status === "In Progress" ? "border-blue-500 text-blue-700" :
-                              "border-gray-500 text-gray-700"
+                              part.status === "Completed"
+                                ? "border-green-500 text-green-700 dark:border-green-400 dark:text-green-300"
+                                : part.status === "Delayed"
+                                ? "border-red-500 text-red-700 dark:border-red-400 dark:text-red-300"
+                                : part.status === "In Progress"
+                                ? "border-blue-500 text-blue-700 dark:border-blue-400 dark:text-blue-300"
+                                : "border-gray-500 text-gray-700 dark:border-gray-400 dark:text-gray-300"
                             }
                           >
                             {part.name}

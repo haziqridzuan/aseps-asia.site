@@ -28,6 +28,8 @@ export default function AdminPurchaseOrders() {
   const { purchaseOrders, suppliers, projects, deletePurchaseOrder } = useData();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
+  const [projectFilter, setProjectFilter] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | undefined>(undefined);
   
@@ -40,8 +42,10 @@ export default function AdminPurchaseOrders() {
       (po.description && po.description.toLowerCase().includes(search.toLowerCase()));
     
     const matchesStatus = statusFilter ? po.status === statusFilter : true;
+    const matchesSupplier = supplierFilter ? po.supplierId === supplierFilter : true;
+    const matchesProject = projectFilter ? po.projectId === projectFilter : true;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesSupplier && matchesProject;
   });
   
   const handleDeletePO = async (poId: string) => {
@@ -98,7 +102,7 @@ export default function AdminPurchaseOrders() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Manage Purchase Orders</h1>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -109,6 +113,40 @@ export default function AdminPurchaseOrders() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          
+          <Select
+            value={supplierFilter || "all"}
+            onValueChange={(value) => setSupplierFilter(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Supplier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Suppliers</SelectItem>
+              {suppliers.map((supplier) => (
+                <SelectItem key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={projectFilter || "all"}
+            onValueChange={(value) => setProjectFilter(value === "all" ? null : value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by Project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Select
             value={statusFilter || "all"}
