@@ -241,17 +241,25 @@ export default function SupplierDetails() {
                 <TableHead>PO Number</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Parts</TableHead>
-                <TableHead>Deadline</TableHead>
+                <TableHead style={{ minWidth: '120px' }}>Parts</TableHead>
+                <TableHead style={{ minWidth: '140px' }}>Deadline</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {supplierPOs.length > 0 ? (
-                supplierPOs.map((po) => {
-                  const project = projects.find(p => p.id === po.projectId);
+                Object.values(
+                  supplierPOs.reduce((acc, po) => {
+                    const key = `${po.poNumber}__${po.projectId}`;
+                    if (!acc[key]) acc[key] = { poNumber: po.poNumber, projectId: po.projectId, pos: [] };
+                    acc[key].pos.push(po);
+                    return acc;
+                  }, {} as Record<string, { poNumber: string; projectId: string; pos: typeof supplierPOs }>))
+                .map((group, idx) => {
+                  const project = projects.find(p => p.id === group.projectId);
+                  const statuses = [...new Set(group.pos.map(po => po.status))];
                   return (
-                    <TableRow key={po.id} className="hover:bg-secondary/50 transition-colors animate-fade-in">
-                      <TableCell className="font-medium">{po.poNumber}</TableCell>
+                    <TableRow key={group.poNumber + group.projectId + idx} className="hover:bg-secondary/50 transition-colors animate-fade-in">
+                      <TableCell className="font-medium">{group.poNumber}</TableCell>
                       <TableCell>
                         {project ? (
                           <Button
@@ -266,12 +274,26 @@ export default function SupplierDetails() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(po.status)}>
-                          {po.status}
-                        </Badge>
+                        {statuses.map((status, i) => (
+                          <Badge key={status + i} className={getStatusColor(status)}>
+                            {status}
+                          </Badge>
+                        ))}
                       </TableCell>
-                      <TableCell>{po.parts.length} parts</TableCell>
-                      <TableCell>{new Date(po.deadline).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {group.pos.map((po, i) => (
+                            <span key={i}>{po.parts.length} parts</span>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {group.pos.map((po, i) => (
+                            <span key={i}>{new Date(po.deadline).toLocaleDateString()}</span>
+                          ))}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })

@@ -16,7 +16,7 @@ import { ChevronLeft, Ship, Package, ChevronDown, Link as LinkIcon } from "lucid
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { PartsProgressPieChart } from "@/components/dashboard/PartsProgressPieChart";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export default function ProjectDetails() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -53,8 +53,8 @@ export default function ProjectDetails() {
     projectPOs.some(po => po.poNumber === poNumber && po.status === "Delayed")
   ).length;
   
-  // Get total parts count
-  const totalParts = projectPOs.reduce((total, po) => total + po.parts.length, 0);
+  // Get total parts count (sum of all part quantities)
+  const totalParts = projectPOs.reduce((total, po) => total + po.parts.reduce((sum, part) => sum + (part.quantity || 0), 0), 0);
   
   // Get suppliers involved
   const supplierIds = [...new Set(projectPOs.map(po => po.supplierId))];
@@ -124,6 +124,28 @@ export default function ProjectDetails() {
     return acc;
   }, {} as Record<string, typeof projectPOs>);
   
+  // --- Expanded PO Rows State ---
+  const [expandedPOs, setExpandedPOs] = useState<{ [poNumber: string]: boolean }>({});
+
+  // On mount or when groupedPOs changes, expand all multi-variant POs by default
+  useEffect(() => {
+    const newExpanded: { [poNumber: string]: boolean } = {};
+    Object.entries(groupedPOs).forEach(([poNumber, poList]) => {
+      const descriptions = poList.map(po => po.description || "No description");
+      const hasMultipleDescriptions = descriptions.filter((v, i, a) => a.indexOf(v) === i).length > 1;
+      if (hasMultipleDescriptions) {
+        newExpanded[poNumber] = true;
+      }
+    });
+    setExpandedPOs(newExpanded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, Object.keys(groupedPOs).join(",")]);
+
+  // Toggle expand/collapse for a PO number
+  const handleTogglePO = (poNumber: string) => {
+    setExpandedPOs(prev => ({ ...prev, [poNumber]: !prev[poNumber] }));
+  };
+  
   // Calculate parts progress data for pie chart
   const partsProgressData = useMemo(() => {
     const statusCounts = {
@@ -135,11 +157,11 @@ export default function ProjectDetails() {
       "Finished": 0
     };
 
-    // Count parts by status
+    // Sum part quantities by status
     projectPOs.forEach(po => {
       po.parts.forEach(part => {
         if (statusCounts.hasOwnProperty(part.status)) {
-          statusCounts[part.status as keyof typeof statusCounts]++;
+          statusCounts[part.status as keyof typeof statusCounts] += part.quantity || 0;
         }
       });
     });
@@ -409,7 +431,12 @@ export default function ProjectDetails() {
                     }
                     // Collapsible row for multiple descriptions
                     return (
-                      <CollapsiblePrimitive.Root asChild key={poNumber}>
+                      <CollapsiblePrimitive.Root
+                        asChild
+                        key={poNumber}
+                        open={!!expandedPOs[poNumber]}
+                        onOpenChange={() => handleTogglePO(poNumber)}
+                      >
                         <>
                           <TableRow>
                             <TableCell className="font-medium">

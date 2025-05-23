@@ -31,7 +31,7 @@ const CustomValueLabel = (props: LabelProps) => {
       y={Number(y) + 20}
       fontWeight={700}
       fontSize={16}
-      fill="#0ea5e9"
+      fill="#006400"
       style={{ textShadow: '0 1px 4px #fff' }}
     >
       {`$${Number(value).toLocaleString()}`}
@@ -74,9 +74,9 @@ export function BudgetSpentChart({ spentByProject, budgetColors }: BudgetSpentCh
               </Bar>
               <defs>
                 <linearGradient id="budgetGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#9b87f5" />
-                  <stop offset="50%" stopColor="#33C3F0" />
-                  <stop offset="100%" stopColor="#0EA5E9" />
+                  <stop offset="0%" stopColor="#bfa800" />
+                  <stop offset="50%" stopColor="#7bbf24" />
+                  <stop offset="100%" stopColor="#228B22" />
                 </linearGradient>
               </defs>
             </BarChart>
