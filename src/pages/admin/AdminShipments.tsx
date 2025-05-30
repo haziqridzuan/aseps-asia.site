@@ -171,34 +171,51 @@ export default function AdminShipments() {
                       </TableHeader>
                       <TableBody>
                         {filteredShipments.map((shipment) => (
-                          <TableRow key={shipment.id}>
-                            <TableCell>{shipment.type}</TableCell>
-                            <TableCell>{getProjectName(shipment.projectId)}</TableCell>
-                            <TableCell>{getSupplierName(shipment.supplierId)}</TableCell>
-                            <TableCell>{format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>{format(new Date(shipment.etaDate), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>{shipment.status}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  className="bg-white border border-gray-200 hover:bg-gray-100 shadow-none"
-                                  onClick={() => handleOpenEditForm(shipment.id)}
-                                >
-                                  <FileEdit className="h-5 w-5 text-black" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="icon"
-                                  className="bg-red-500 hover:bg-red-600 text-white shadow-none"
-                                  onClick={() => handleDeleteShipment(shipment.id)}
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          <React.Fragment key={shipment.id}>
+                            <TableRow>
+                              <TableCell className="py-6 text-base">{shipment.type}</TableCell>
+                              <TableCell className="py-6 text-base">{getProjectName(shipment.projectId)}</TableCell>
+                              <TableCell className="py-6 text-base">{getSupplierName(shipment.supplierId)}</TableCell>
+                              <TableCell className="py-6 text-base">{format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}</TableCell>
+                              <TableCell className="py-6 text-base">{format(new Date(shipment.etaDate), 'MMM dd, yyyy')}</TableCell>
+                              <TableCell className="py-6 text-base">{shipment.status}</TableCell>
+                              <TableCell className="py-6 text-base">
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="bg-white border border-gray-200 hover:bg-gray-100 shadow-none"
+                                    onClick={() => handleOpenEditForm(shipment.id)}
+                                  >
+                                    <FileEdit className="h-5 w-5 text-black" />
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="bg-red-500 hover:bg-red-600 text-white shadow-none"
+                                    onClick={() => handleDeleteShipment(shipment.id)}
+                                  >
+                                    <Trash2 className="h-5 w-5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {/* Expanded details row */}
+                            <TableRow className="bg-gray-50">
+                              <TableCell colSpan={7} className="py-4 px-6 text-sm text-gray-700">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                                  <div><span className="font-semibold">Shipped Date:</span> {format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}</div>
+                                  <div><span className="font-semibold">ETD:</span> {shipment.etdDate ? format(new Date(shipment.etdDate), 'MMM dd, yyyy') : '-'}</div>
+                                  <div><span className="font-semibold">ETA:</span> {format(new Date(shipment.etaDate), 'MMM dd, yyyy')}</div>
+                                  <div><span className="font-semibold">Container No.:</span> {shipment.containerNumber || '-'}</div>
+                                  <div><span className="font-semibold">Container Size:</span> {shipment.containerSize || '-'}</div>
+                                  <div><span className="font-semibold">Container Type:</span> {shipment.containerType || '-'}</div>
+                                  <div><span className="font-semibold">Lock No.:</span> {shipment.lockNumber || '-'}</div>
+                                  <div className="sm:col-span-4"><span className="font-semibold">Notes:</span> {shipment.notes || '-'}</div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </React.Fragment>
                         ))}
                       </TableBody>
                     </Table>

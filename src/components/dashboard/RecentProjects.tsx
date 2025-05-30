@@ -1,4 +1,3 @@
-
 import { useData } from "@/contexts/DataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import { File } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function RecentProjects() {
-  const { projects, clients } = useData();
+  const { projects, clients, purchaseOrders } = useData();
   
   // Get 5 most recent projects based on start date
   const recentProjects = [...projects]
@@ -38,6 +37,18 @@ export function RecentProjects() {
     }
   };
   
+  // Helper to calculate dynamic project progress
+  const getDynamicProjectProgress = (projectId) => {
+    const projectPOs = purchaseOrders.filter(po => po.projectId === projectId);
+    const poProgresses = projectPOs.map(po => {
+      if (po.parts && po.parts.length > 0) {
+        return po.parts.reduce((sum, part) => sum + (part.progress || 0), 0) / po.parts.length;
+      }
+      return po.progress || 0;
+    });
+    return poProgresses.length > 0 ? Math.round(poProgresses.reduce((a, b) => a + b, 0) / poProgresses.length) : 0;
+  };
+  
   return (
     <Card className="card-hover">
       <CardHeader className="pb-2">
@@ -64,8 +75,8 @@ export function RecentProjects() {
                 <span>{project.location}</span>
               </div>
               <div className="flex items-center justify-between">
-                <Progress value={project.progress} className="h-2" />
-                <span className="text-sm font-medium ml-2">{project.progress}%</span>
+                <Progress value={getDynamicProjectProgress(project.id)} className="h-2" />
+                <span className="text-sm font-medium ml-2">{getDynamicProjectProgress(project.id)}%</span>
               </div>
             </div>
           ))}

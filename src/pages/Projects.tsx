@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Link } from "react-router-dom";
@@ -24,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { File, Search, ChevronDown } from "lucide-react";
 
 export default function Projects() {
-  const { projects, clients } = useData();
+  const { projects, clients, purchaseOrders } = useData();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   
@@ -60,6 +59,18 @@ export default function Projects() {
       default:
         return "bg-gray-500";
     }
+  };
+  
+  // Helper to calculate dynamic project progress
+  const getDynamicProjectProgress = (projectId) => {
+    const projectPOs = purchaseOrders.filter(po => po.projectId === projectId);
+    const poProgresses = projectPOs.map(po => {
+      if (po.parts && po.parts.length > 0) {
+        return po.parts.reduce((sum, part) => sum + (part.progress || 0), 0) / po.parts.length;
+      }
+      return po.progress || 0;
+    });
+    return poProgresses.length > 0 ? Math.round(poProgresses.reduce((a, b) => a + b, 0) / poProgresses.length) : 0;
   };
   
   return (
@@ -139,8 +150,8 @@ export default function Projects() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Progress value={project.progress} className="h-2 w-[100px]" />
-                        <span className="text-sm font-medium">{project.progress}%</span>
+                        <Progress value={getDynamicProjectProgress(project.id)} className="h-2 w-[100px]" />
+                        <span className="text-sm font-medium">{getDynamicProjectProgress(project.id)}%</span>
                       </div>
                     </TableCell>
                   </TableRow>

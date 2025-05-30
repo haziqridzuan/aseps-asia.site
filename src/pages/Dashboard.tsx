@@ -79,6 +79,18 @@ export default function Dashboard() {
     { name: "Delayed", value: projects.filter(p => p.status === "Delayed").length, color: "#ef4444" },
   ].filter(item => item.value > 0);
   
+  // Helper to calculate dynamic project progress
+  const getDynamicProjectProgress = (projectId) => {
+    const projectPOs = purchaseOrders.filter(po => po.projectId === projectId);
+    const poProgresses = projectPOs.map(po => {
+      if (po.parts && po.parts.length > 0) {
+        return po.parts.reduce((sum, part) => sum + (part.progress || 0), 0) / po.parts.length;
+      }
+      return po.progress || 0;
+    });
+    return poProgresses.length > 0 ? Math.round(poProgresses.reduce((a, b) => a + b, 0) / poProgresses.length) : 0;
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
