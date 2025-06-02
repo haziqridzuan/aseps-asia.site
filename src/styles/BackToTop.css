@@ -2,7 +2,7 @@
   position: fixed;
   right: 2rem;
   top: 50%;
-  transform: translateY(-50%) translateX(100px);
+  transform: translate(100px, -50%);
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease-in-out;
@@ -16,7 +16,7 @@
 .back-to-top-container.visible {
   opacity: 1;
   visibility: visible;
-  transform: translateY(-50%) translateX(0);
+  transform: translateY(0);
 }
 
 .back-to-top {
@@ -42,7 +42,7 @@
 }
 
 .back-to-top:active {
-  transform: translateX(0);
+  transform: translateY(0);
 }
 
 .back-to-top .back-to-top-icon {
@@ -76,6 +76,7 @@
 @media (max-width: 768px) {
   .back-to-top-container {
     right: 1rem;
+
   }
   
   .back-to-top {

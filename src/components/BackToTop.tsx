@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import '../styles/BackToTop.css';
 
 const BackToTop = (): JSX.Element => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [isHovered, setIsHovered] = useState<boolean>(false);
 
   useEffect(() => {
     const toggleVisibility = (): void => {
@@ -27,19 +32,23 @@ const BackToTop = (): JSX.Element => {
   };
 
   return (
-    <div 
-      className={`back-to-top-container ${isVisible ? 'visible' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <button
-        className="back-to-top"
-        onClick={scrollToTop}
-        aria-label="Back to top"
-      >
-        <ArrowUp className="back-to-top-icon" />
-        {isHovered && <span className="back-to-top-text">Back to Top</span>}
-      </button>
+    <div className={`back-to-top-container ${isVisible ? 'visible' : ''}`}>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="back-to-top"
+              onClick={scrollToTop}
+              aria-label="Back to top"
+            >
+              <ArrowUp className="back-to-top-icon" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="font-medium">
+            Back to Top
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
