@@ -1,73 +1,48 @@
-# Welcome to your Lovable project
+# ASEPS Asia Website
 
-## Project info
+Welcome to the official repository for the [ASEPS Asia](https://aseps-asia.site) website. This site serves as the digital presence for ASEPS Asia, showcasing our capabilities, expertise, and projects across the industrial, engineering, and powder processing sectors.
 
-**URL**: https://lovable.dev/projects/e4c950c6-4981-42d7-b6c6-dfb7769398b2
+## 🌐 Live Site
 
-## How can I edit this code?
+Visit the live site here: [https://aseps-asia.site](https://aseps-asia.site)
 
-There are several ways of editing your application.
+## 🚀 Project Overview
 
-**Use Lovable**
+ASEPS Asia provides high-quality solutions and services in the field of powder processing, industrial automation, and project management. This website is designed as a professional landing page to present our services, experience, and contact information to potential clients and partners.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e4c950c6-4981-42d7-b6c6-dfb7769398b2) and start prompting.
+## 📁 Project Structure
 
-Changes made via Lovable will be committed automatically to this repo.
+This site is deployed on [Netlify](https://www.netlify.com/) and connected to this GitHub repository. The stack may include:
 
-**Use your preferred IDE**
+- **HTML / TailwindCSS** or a site builder (e.g., Lovable, Framer, etc.)
+- **Netlify** for hosting and CI/CD
+- **Supabase** for backend data (if dynamic content is present)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Responsive, mobile-friendly design
+- Service and project overviews
+- Contact section
+- SEO-optimized content
+- Fast and secure static hosting
 
-Follow these steps:
+## 📦 Deployment
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The site is continuously deployed through Netlify. Any changes pushed to the main branch will automatically trigger a redeploy.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Deploy Settings
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Build Command**: _Depends on the framework used (e.g., `npm run build` or static export)_
+- **Publish Directory**: `dist/` or root folder (`/`), depending on the site builder
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## 🤝 Contributing
 
-**Edit a file directly in GitHub**
+Currently, this is a private project maintained by the ASEPS Asia team. For suggestions, please open an issue or contact via the site’s contact form.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📬 Contact
 
-**Use GitHub Codespaces**
+If you have inquiries or collaboration opportunities, visit our contact page at [https://aseps-asia.site](https://aseps-asia.site) or email us directly via the contact form.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e4c950c6-4981-42d7-b6c6-dfb7769398b2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+© ASEPS Asia. All rights reserved.

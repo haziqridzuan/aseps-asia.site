@@ -952,13 +952,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (poUpdate.poNumber !== undefined) updateData.po_number = poUpdate.poNumber;
       if (poUpdate.projectId !== undefined) updateData.project_id = poUpdate.projectId;
       if (poUpdate.supplierId !== undefined) updateData.supplier_id = poUpdate.supplierId;
-      if (poUpdate.status !== undefined) updateData.status = poUpdate.status;
+      if (poUpdate.status !== undefined) {
+        updateData.status = poUpdate.status;
+        // If status is being changed back to Active, clear the completion date
+        if (poUpdate.status === 'Active') {
+          updateData.completion_date = null;
+        }
+      }
       if (poUpdate.issuedDate !== undefined) updateData.issued_date = poUpdate.issuedDate;
       if (poUpdate.deadline !== undefined) updateData.deadline = poUpdate.deadline;
       if (poUpdate.progress !== undefined) updateData.progress = poUpdate.progress;
       if (poUpdate.amount !== undefined) updateData.amount = poUpdate.amount;
       if (poUpdate.description !== undefined) updateData.description = poUpdate.description;
-      if (poUpdate.completionDate !== undefined) updateData.completion_date = poUpdate.completionDate;
+      // Only set completion_date if it's explicitly provided and status is not being set to Active
+      if (poUpdate.completionDate !== undefined && poUpdate.status !== 'Active') {
+        updateData.completion_date = poUpdate.completionDate;
+      }
       
       const { error: poError } = await supabase
         .from('purchase_orders')

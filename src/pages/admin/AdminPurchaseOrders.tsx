@@ -184,6 +184,7 @@ export default function AdminPurchaseOrders() {
                 <TableHead>Value</TableHead>
                 <TableHead>Issue Date</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Deadline</TableHead>
                 <TableHead>Completion Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -218,6 +219,7 @@ export default function AdminPurchaseOrders() {
                         {po.status}
                       </span>
                     </TableCell>
+                    <TableCell>{po.deadline ? format(new Date(po.deadline), "MMM d, yyyy") : "-"}</TableCell>
                     <TableCell>{po.completionDate ? format(new Date(po.completionDate), "MMM d, yyyy") : "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

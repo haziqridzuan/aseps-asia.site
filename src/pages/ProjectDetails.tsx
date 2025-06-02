@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,11 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, Ship, Package, ChevronDown, Link as LinkIcon, ChevronUp, Filter } from "lucide-react";
+import { ChevronLeft, Ship, Package, ChevronDown, Link as LinkIcon, ChevronUp, Filter, ArrowRight } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 import { PartsProgressPieChart } from "@/components/dashboard/PartsProgressPieChart";
-import { useMemo, useState, useEffect, useRef } from "react";
 
 // Helper to format date as DD-MM-YYYY (move this up for use in filter rendering)
 const formatDate = (dateStr: string) => {
@@ -30,6 +30,7 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function ProjectDetails() {
+  const shipmentsSectionRef = useRef<HTMLDivElement>(null);
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { projects, clients, suppliers, purchaseOrders, shipments } = useData();
@@ -568,7 +569,7 @@ export default function ProjectDetails() {
             <Badge className={getStatusColor(project.status)}>
               {project.status}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-black">
               {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
             </span>
           </div>
@@ -584,7 +585,7 @@ export default function ProjectDetails() {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="font-medium">{dynamicProjectProgress}% Complete</span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-black">
                 Target: {new Date(project.endDate).toLocaleDateString()}
               </span>
             </div>
@@ -695,14 +696,14 @@ export default function ProjectDetails() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>PO Number</TableHead>
-                  <TableHead>Issue Date</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Parts</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Deadline</TableHead>
+                  <TableHead className="w-[120px]">PO Number</TableHead>
+                  <TableHead className="w-[120px]">Issue Date</TableHead>
+                  <TableHead className="w-[150px]">Supplier</TableHead>
+                  <TableHead className="min-w-[250px]">Description</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[120px]">Progress</TableHead>
+                  <TableHead className="w-[120px]">Deadline</TableHead>
+                  <TableHead className="w-[140px]">Completion Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -722,6 +723,7 @@ export default function ProjectDetails() {
                     const allSameSupplier = sortedPoList.every(p => getSupplierName(p.supplierId) === getSupplierName(sortedPoList[0].supplierId));
                     const allSameIssueDate = sortedPoList.every(p => p.issuedDate === sortedPoList[0].issuedDate);
                     const allSameDeadline = sortedPoList.every(p => p.deadline === sortedPoList[0].deadline);
+                    const allSameCompletionDate = sortedPoList.every(p => p.completionDate === sortedPoList[0].completionDate);
                     if (!hasMultipleDescriptions) {
                       // Calculate PO progress as average of part progresses (fallback to po.progress)
                       const po = sortedPoList[0];
@@ -732,9 +734,8 @@ export default function ProjectDetails() {
                         <TableRow key={poNumber} className="hover:bg-secondary/50 transition-colors animate-fade-in">
                           <TableCell className="font-medium">{poNumber}</TableCell>
                           <TableCell>{new Date(issueDates[0]).toLocaleDateString()}</TableCell>
-                          <TableCell>{uniqueSuppliers}</TableCell>
-                          <TableCell>{descriptions[0]}</TableCell>
-                          <TableCell>{totalParts} parts</TableCell>
+                          <TableCell className="font-medium">{uniqueSuppliers}</TableCell>
+                          <TableCell className="whitespace-normal">{descriptions[0]}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(getEffectiveStatus(po))}>
                               {getEffectiveStatus(po)}
@@ -747,6 +748,34 @@ export default function ProjectDetails() {
                             </div>
                           </TableCell>
                           <TableCell>{new Date(deadlines[0]).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {sortedPoList[0].completionDate ? (
+                              <div className="relative group" title="View shipment detail">
+                                <button 
+                                  className="relative overflow-hidden inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 ease-in-out
+                                    bg-gradient-to-r from-green-50 to-green-50 dark:from-green-900/20 dark:to-green-900/10
+                                    hover:from-green-100 hover:to-green-50 dark:hover:from-green-800/30 dark:hover:to-green-900/20
+                                    border border-green-200 dark:border-green-800/50
+                                    hover:shadow-sm hover:shadow-green-100/50 dark:hover:shadow-green-900/20
+                                    transform hover:-translate-y-0.5 active:translate-y-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const shipmentsSection = document.getElementById('shipments-section');
+                                    if (shipmentsSection) {
+                                      shipmentsSection.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                  }}
+                                >
+                                  <span className="relative z-10 flex items-center gap-1.5 text-green-700 dark:text-green-300">
+                                    {new Date(sortedPoList[0].completionDate).toLocaleDateString()}
+                                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
+                                  </span>
+                                  <span className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-green-400/5 dark:from-green-400/10 dark:to-green-500/10 opacity-0 group-hover:opacity-100 rounded-md transition-opacity duration-300"></span>
+                                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 animate-shine"></span>
+                                </button>
+                              </div>
+                            ) : '-'}
+                          </TableCell>
                         </TableRow>
                       );
                     }
@@ -803,8 +832,7 @@ export default function ProjectDetails() {
                                   ) : (
                                     <TableCell>{getSupplierName(po.supplierId)}</TableCell>
                                   )}
-                                    <TableCell>{po.description || "No description"}</TableCell>
-                                    <TableCell>{po.parts.reduce((s, p) => s + (p.quantity || 0), 0)} parts</TableCell>
+                                    <TableCell className="whitespace-normal">{po.description || "No description"}</TableCell>
                                   <TableCell>
                                     <Badge className={getStatusColor(getEffectiveStatus(po))}>
                                       {getEffectiveStatus(po)}
@@ -825,8 +853,66 @@ export default function ProjectDetails() {
                                   ) : (
                                     <TableCell>{new Date(po.deadline).toLocaleDateString()}</TableCell>
                                   )}
+                                  {allSameCompletionDate ? (
+                                    idx === 0 ? (
+                                      <TableCell rowSpan={sortedPoList.length} className="text-center align-middle">
+                                        {po.completionDate ? (
+                                          <button 
+                                            className="group relative inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 ease-in-out
+                                              bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/10
+                                              hover:from-blue-100 hover:to-blue-50 dark:hover:from-blue-800/30 dark:hover:to-blue-900/20
+                                              border border-blue-200 dark:border-blue-800/50
+                                              hover:shadow-sm hover:shadow-blue-100 dark:hover:shadow-blue-900/20
+                                              transform hover:-translate-y-0.5 active:translate-y-0"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const shipmentsSection = document.getElementById('shipments-section');
+                                              if (shipmentsSection) {
+                                                shipmentsSection.scrollIntoView({ behavior: 'smooth' });
+                                              }
+                                            }}
+                                          >
+                                            <span className="completion-date-text relative z-10 flex items-center gap-1.5">
+  {new Date(po.completionDate).toLocaleDateString()}
+  <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
+</span>
+                                            <span className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-blue-400/5 dark:from-blue-400/10 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 rounded-md transition-opacity duration-300"></span>
+                                          </button>
+                                        ) : '-'}
+                                      </TableCell>
+                                    ) : null
+                                  ) : (
+                                    <TableCell>
+                                      {po.completionDate ? (
+                                        <div className="relative group" title="View shipment detail">
+                                          <button 
+                                            className="relative overflow-hidden inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 ease-in-out
+                                              bg-gradient-to-r from-green-50 to-green-50 dark:from-green-900/20 dark:to-green-900/10
+                                              hover:from-green-100 hover:to-green-50 dark:hover:from-green-800/30 dark:hover:to-green-900/20
+                                              border border-green-200 dark:border-green-800/50
+                                              hover:shadow-sm hover:shadow-green-100/50 dark:hover:shadow-green-900/20
+                                              transform hover:-translate-y-0.5 active:translate-y-0"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const shipmentsSection = document.getElementById('shipments-section');
+                                              if (shipmentsSection) {
+                                                shipmentsSection.scrollIntoView({ behavior: 'smooth' });
+                                              }
+                                            }}
+                                          >
+                                            <span className="relative z-10 flex items-center gap-1.5 text-green-700 dark:text-green-300">
+                                              {new Date(po.completionDate).toLocaleDateString()}
+                                              <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
+                                            </span>
+                                            <span className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-green-400/5 dark:from-green-400/10 dark:to-green-500/10 opacity-0 group-hover:opacity-100 rounded-md transition-opacity duration-300"></span>
+                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 animate-shine"></span>
+                                          </button>
+                                        </div>
+                                      ) : '-'}
+                                    </TableCell>
+                                  )}
                                 </TableRow>
-                                );
+                              );
                               })}
                             </>
                           </CollapsiblePrimitive.CollapsibleContent>
@@ -850,15 +936,15 @@ export default function ProjectDetails() {
               <TableHeader>
                 <TableRow>
                   {[
-                    { key: 'poNumber', label: 'PO Number' },
-                    { key: 'issuedDate', label: 'Issue Date' },
-                    { key: 'supplier', label: 'Supplier' },
-                    { key: 'description', label: 'Description' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'progress', label: 'Progress' },
-                    { key: 'deadline', label: 'Deadline' },
+                    { key: 'poNumber', label: 'PO Number', width: 'w-32' },
+                    { key: 'supplier', label: 'Supplier', width: 'w-48' },
+                    { key: 'description', label: 'Description', width: 'min-w-[250px]' },
+                    { key: 'parts', label: 'Parts', width: 'w-24' },
+                    { key: 'status', label: 'Status', width: 'w-32' },
+                    { key: 'progress', label: 'Progress', width: 'w-40' },
+                    { key: 'deadline', label: 'Deadline', width: 'w-32' },
                   ].map(col => (
-                    <TableHead key={col.key} className="relative select-none cursor-pointer group" onClick={() => handlePOHeaderClick(col.key)}>
+                    <TableHead key={col.key} className={`relative select-none cursor-pointer group ${col.width || ''}`} onClick={() => handlePOHeaderClick(col.key)}>
                       <div className="flex items-center gap-1">
                         {col.label}
                         {/* Always show sort icon, highlight if active */}
@@ -868,24 +954,24 @@ export default function ProjectDetails() {
                           type="button"
                           className="ml-1 p-1 rounded hover:bg-muted/30 relative"
                           onClick={e => { e.stopPropagation(); handlePOFilterClick(col.key); }}
-                >
+                        >
                           <Filter className="w-4 h-4" />
                           {/* Show badge with count of selected filters */}
                           {poFilters[col.key] && poFilters[col.key].length > 0 && (
                             <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full px-1">{poFilters[col.key].length}</span>
                           )}
                         </button>
-              </div>
+                      </div>
                       {poFilterDropdown === col.key && (
                         <div
                           ref={poFilterDropdownRef}
                           className="absolute z-50 left-0 mt-2 bg-white border rounded-xl shadow-2xl min-w-[220px] p-4 flex flex-col gap-2"
                           style={{ top: '100%' }}
-                >
+                        >
                           <div className="font-semibold mb-2">Filter {col.label}</div>
                           <div className="max-h-48 overflow-y-auto flex flex-col gap-2">
                             <label className="flex items-center gap-2 cursor-pointer">
-                <input
+                              <input
                                 type="checkbox"
                                 checked={
                                   !poFilters[col.key] || poFilters[col.key].length === 0 ||
@@ -909,14 +995,14 @@ export default function ProjectDetails() {
                                 {col.key.endsWith('Date') ? (val ? formatDate(val) : '-') : val}
                               </label>
                             ))}
-              </div>
+                          </div>
                           <button
                             className="mt-2 px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold self-end transition"
                             onClick={() => handlePOFilterClear(col.key)}
                           >
                             Reset Filters
                           </button>
-            </div>
+                        </div>
                       )}
                     </TableHead>
                   ))}
@@ -931,9 +1017,11 @@ export default function ProjectDetails() {
                   return (
                     <TableRow key={po.id}>
                       <TableCell>{po.poNumber}</TableCell>
-                      <TableCell>{new Date(po.issuedDate).toLocaleDateString()}</TableCell>
                       <TableCell>{getSupplierName(po.supplierId)}</TableCell>
-                      <TableCell>{po.description || '-'}</TableCell>
+                      <TableCell className="whitespace-normal">{po.description || '-'}</TableCell>
+                      <TableCell className="text-center">
+                        {po.parts?.reduce((sum, part) => sum + (part.quantity || 0), 0) || 0} {po.parts?.length === 1 ? 'part' : 'parts'}
+                      </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(getEffectiveStatus(po))}>{getEffectiveStatus(po)}</Badge>
                       </TableCell>
@@ -949,7 +1037,7 @@ export default function ProjectDetails() {
                 })}
                 {sortedFilteredPOsForTable.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">No purchase orders found.</TableCell>
+                    <TableCell colSpan={7} className="text-center">No purchase orders found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -1159,7 +1247,7 @@ export default function ProjectDetails() {
         </Card>
         
         {/* Shipments Section */}
-        <Card className="card-hover">
+        <Card id="shipments-section" className="card-hover" ref={shipmentsSectionRef}>
           <CardHeader className="pb-2 flex items-center">
             <Ship className="h-5 w-5 mr-2 text-primary" />
             <CardTitle className="text-lg font-medium">Project Shipments</CardTitle>
@@ -1169,22 +1257,37 @@ export default function ProjectDetails() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-8 text-center">#</TableHead>
-                  {[
-                    { key: 'type', label: 'Type' },
-                    { key: 'supplier', label: 'Supplier' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'shippedDate', label: 'Shipped Date' },
-                    { key: 'etdDate', label: 'ETD' },
-                    { key: 'etaDate', label: 'ETA' },
-                    { key: 'containerNumber', label: 'Container Number' },
-                    { key: 'lockNumber', label: 'Lock Number' },
-                  ].map(col => (
-                    <TableHead key={col.key} className="relative select-none cursor-pointer group" onClick={() => handleShipmentHeaderClick(col.key)}>
-                      <div className="flex items-center gap-1">
-                        {col.label}
-                      </div>
-                    </TableHead>
-                  ))}
+                  {
+  [
+    { key: 'type', label: 'Type' },
+    { key: 'supplier', label: 'Supplier' },
+    { key: 'status', label: 'Status' },
+    { key: 'shippedDate', label: 'Shipped Date' },
+    { key: 'etdDate', label: 'ETD' },
+    { key: 'etaDate', label: 'ETA' }
+  ].map(col => (
+    <TableHead key={col.key} className={`relative select-none cursor-pointer group ${['status','shippedDate','etdDate','etaDate'].includes(col.key) ? 'text-center' : ''}`} onClick={() => handleShipmentHeaderClick(col.key)}>
+      <div className="flex items-center gap-1 justify-center">
+        {col.label}
+      </div>
+    </TableHead>
+  ))
+}
+<TableHead className="text-center">Container Size</TableHead>
+<TableHead className="text-center">Container Type</TableHead>
+{
+  [
+    { key: 'containerNumber', label: 'Container Number' },
+    { key: 'lockNumber', label: 'Lock Number' }
+  ].map(col => (
+    <TableHead key={col.key} className={`relative select-none cursor-pointer group ${['status','shippedDate','etdDate','etaDate'].includes(col.key) ? 'text-center' : ''}`} onClick={() => handleShipmentHeaderClick(col.key)}>
+      <div className="flex items-center gap-1 justify-center">
+        {col.label}
+      </div>
+    </TableHead>
+  ))
+}
+
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1218,12 +1321,14 @@ export default function ProjectDetails() {
                         <TableCell className="text-center font-semibold">{idx + 1}</TableCell>
                         <TableCell>{shipment.type}</TableCell>
                         <TableCell>{getSupplierName(shipment.supplierId)}</TableCell>
-                        <TableCell>{shipment.status}</TableCell>
-                        <TableCell>{formatDate(shipment.shippedDate)}</TableCell>
-                        <TableCell>{formatDate(shipment.etdDate)}</TableCell>
-                        <TableCell>{formatDate(shipment.etaDate)}</TableCell>
-                        <TableCell>{shipment.containerNumber}</TableCell>
-                        <TableCell>{shipment.lockNumber}</TableCell>
+                        <TableCell className="text-center">{shipment.status}</TableCell>
+                        <TableCell className="text-center">{formatDate(shipment.shippedDate)}</TableCell>
+                        <TableCell className="text-center">{formatDate(shipment.etdDate)}</TableCell>
+                        <TableCell className="text-center">{formatDate(shipment.etaDate)}</TableCell>
+                        <TableCell className="text-center">{shipment.containerSize || '-'}</TableCell>
+                        <TableCell className="text-center">{shipment.containerType || '-'}</TableCell>
+                        <TableCell className="text-center">{shipment.containerNumber}</TableCell>
+                        <TableCell className="text-center">{shipment.lockNumber}</TableCell>
                         <TableCell className="text-right pr-4">
                           <button onClick={() => handleToggleShipment(shipment.id)} className="focus:outline-none">
                             <ChevronDown className={`transition-transform ${expandedShipments[shipment.id] ? 'rotate-180' : ''}`} />

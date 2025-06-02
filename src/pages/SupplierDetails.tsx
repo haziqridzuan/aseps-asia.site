@@ -31,10 +31,26 @@ export default function SupplierDetails() {
     );
   }
   
-  // Get POs related to this supplier
+  // Get POs related to this supplier and group by base PO number (before underscore)
   const supplierPOs = purchaseOrders.filter(po => po.supplierId === supplier.id);
-  const activePOs = supplierPOs.filter(po => po.status === "Active").length;
-  const completedPOs = supplierPOs.filter(po => po.status === "Completed").length;
+  
+  // Group POs by their base PO number (before the first underscore)
+  const poGroups = supplierPOs.reduce((groups, po) => {
+    const basePONumber = po.poNumber.split('_')[0];
+    if (!groups[basePONumber]) {
+      groups[basePONumber] = [];
+    }
+    groups[basePONumber].push(po);
+    return groups;
+  }, {} as Record<string, typeof supplierPOs>);
+  
+  // Count unique POs (grouped by base PO number)
+  const totalPOs = Object.keys(poGroups).length;
+  
+  // Count completed POs (all variants must be completed)
+  const completedPOs = Object.values(poGroups).filter(pos => 
+    pos.every(po => po.status === "Completed")
+  ).length;
   
   // Get projects involving this supplier
   const projectIds = [...new Set(supplierPOs.map(po => po.projectId))];
@@ -156,7 +172,7 @@ export default function SupplierDetails() {
                 <div className="stat-card">
                   <div>
                     <p className="text-sm text-muted-foreground">Total POs</p>
-                    <p className="text-xl font-bold">{supplierPOs.length}</p>
+                    <p className="text-xl font-bold">{totalPOs}</p>
                   </div>
                 </div>
                 

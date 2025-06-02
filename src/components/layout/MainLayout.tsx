@@ -4,6 +4,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Header } from "./Header";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import BackToTop from "../../components/BackToTop";
 
 export default function MainLayout() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -35,6 +36,7 @@ export default function MainLayout() {
                 <div className="animate-pulse text-primary">Loading...</div>
               </div>
             )}
+            <BackToTop />
           </main>
         </div>
       </div>

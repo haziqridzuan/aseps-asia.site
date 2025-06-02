@@ -2,6 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes highlight {
+  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.highlight-section {
+  animation: highlight 1s ease-in-out;
+  border-radius: 0.5rem;
+}
+
+.completion-date-btn {
+  position: relative;
+  overflow: hidden;
+}
+.completion-date-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.7) 60%, rgba(255,255,255,0.2) 100%);
+  transform: skewX(-20deg);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+.completion-date-btn:hover::before {
+  left: 120%;
+  transition: left 0.5s;
+}
+.completion-date-btn:active {
+  filter: brightness(0.97);
+}
+
+.completion-date-text {
+  color: #20732d !important;
+  font-weight: 600;
+  font-size: 1.05em;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.dark .completion-date-text {
+  color: #23b26d !important;
+}
+
+
+
 @layer base {
   :root {
     --background: 220 33% 98%;
