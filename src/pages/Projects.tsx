@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
-import { Link } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,69 +10,72 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { File, Search, ChevronDown } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { File, Search, ChevronDown } from 'lucide-react';
 
 export default function Projects() {
   const { projects, clients, purchaseOrders } = useData();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  
+
   // Get client name
   const getClientName = (clientId: string): string => {
-    const client = clients.find(c => c.id === clientId);
-    return client ? client.name : "Unknown Client";
+    const client = clients.find((c) => c.id === clientId);
+    return client ? client.name : 'Unknown Client';
   };
-  
+
   // Filter projects based on search and status
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = search === "" || 
+  const filteredProjects = projects.filter((project) => {
+    const matchesSearch =
+      search === '' ||
       project.name.toLowerCase().includes(search.toLowerCase()) ||
       getClientName(project.clientId).toLowerCase().includes(search.toLowerCase()) ||
       project.location.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesStatus = statusFilter === null || project.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
-  
+
   // Function to get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "In Progress":
-        return "bg-blue-500";
-      case "Completed":
-        return "bg-green-500";
-      case "Pending":
-        return "bg-amber-500";
-      case "Delayed":
-        return "bg-red-500";
+      case 'In Progress':
+        return 'bg-blue-500';
+      case 'Completed':
+        return 'bg-green-500';
+      case 'Pending':
+        return 'bg-amber-500';
+      case 'Delayed':
+        return 'bg-red-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
-  
+
   // Helper to calculate dynamic project progress
   const getDynamicProjectProgress = (projectId) => {
-    const projectPOs = purchaseOrders.filter(po => po.projectId === projectId);
-    const poProgresses = projectPOs.map(po => {
+    const projectPOs = purchaseOrders.filter((po) => po.projectId === projectId);
+    const poProgresses = projectPOs.map((po) => {
       if (po.parts && po.parts.length > 0) {
         return po.parts.reduce((sum, part) => sum + (part.progress || 0), 0) / po.parts.length;
       }
       return po.progress || 0;
     });
-    return poProgresses.length > 0 ? Math.round(poProgresses.reduce((a, b) => a + b, 0) / poProgresses.length) : 0;
+    return poProgresses.length > 0
+      ? Math.round(poProgresses.reduce((a, b) => a + b, 0) / poProgresses.length)
+      : 0;
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -80,7 +83,7 @@ export default function Projects() {
           <File className="h-6 w-6 mr-2" />
           Projects
         </h1>
-        
+
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -92,34 +95,34 @@ export default function Projects() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center">
-                {statusFilter || "All Statuses"} <ChevronDown className="ml-2 h-4 w-4" />
+                {statusFilter || 'All Statuses'} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => setStatusFilter(null)}>
                 All Statuses
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("In Progress")}>
+              <DropdownMenuItem onClick={() => setStatusFilter('In Progress')}>
                 In Progress
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("Completed")}>
+              <DropdownMenuItem onClick={() => setStatusFilter('Completed')}>
                 Completed
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("Pending")}>
+              <DropdownMenuItem onClick={() => setStatusFilter('Pending')}>
                 Pending
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("Delayed")}>
+              <DropdownMenuItem onClick={() => setStatusFilter('Delayed')}>
                 Delayed
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-      
+
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -135,23 +138,33 @@ export default function Projects() {
             <TableBody>
               {filteredProjects.length > 0 ? (
                 filteredProjects.map((project, index) => (
-                  <TableRow key={project.id} className="hover:bg-secondary/50 transition-colors animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                  <TableRow
+                    key={project.id}
+                    className="hover:bg-secondary/50 transition-colors animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell>
-                      <Link to={`/projects/${project.id}`} className="font-medium hover:text-primary transition-colors">
+                      <Link
+                        to={`/projects/${project.id}`}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
                         {project.name}
                       </Link>
                     </TableCell>
                     <TableCell>{getClientName(project.clientId)}</TableCell>
                     <TableCell>{project.location}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
-                      </Badge>
+                      <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Progress value={getDynamicProjectProgress(project.id)} className="h-2 w-[100px]" />
-                        <span className="text-sm font-medium">{getDynamicProjectProgress(project.id)}%</span>
+                        <Progress
+                          value={getDynamicProjectProgress(project.id)}
+                          className="h-2 w-[100px]"
+                        />
+                        <span className="text-sm font-medium">
+                          {getDynamicProjectProgress(project.id)}%
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Moon, Sun, Database, RefreshCw, Save, Trash } from "lucide-react";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Moon, Sun, Database, RefreshCw, Save, Trash } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminSettings() {
   const { theme, toggleTheme } = useTheme();
@@ -17,46 +17,46 @@ export default function AdminSettings() {
   const { logout } = useAuth();
   const [isAdvancedMode, setIsAdvancedMode] = useState(false);
   const [isEmailNotifications, setIsEmailNotifications] = useState(true);
-  const [apiEndpoint, setApiEndpoint] = useState("https://api.asepsasia.com");
+  const [apiEndpoint, setApiEndpoint] = useState('https://api.asepsasia.com');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
-  
+
   const handleSyncWithSupabase = async () => {
     setIsSyncing(true);
     try {
       await syncWithSupabase();
-      toast.success("Successfully synced with Supabase", { position: "bottom-center" });
+      toast.success('Successfully synced with Supabase', { position: 'bottom-center' });
     } catch (error) {
-      toast.error("Failed to sync with Supabase", { position: "bottom-center" });
+      toast.error('Failed to sync with Supabase', { position: 'bottom-center' });
     } finally {
       setIsSyncing(false);
     }
   };
-  
+
   const handleClearAllData = async () => {
-    if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
+    if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
       setIsClearing(true);
       try {
         await clearAllData();
-        toast.success("All data has been cleared", { position: "bottom-center" });
+        toast.success('All data has been cleared', { position: 'bottom-center' });
       } catch (error) {
-        toast.error("Failed to clear data", { position: "bottom-center" });
+        toast.error('Failed to clear data', { position: 'bottom-center' });
       } finally {
         setIsClearing(false);
       }
     }
   };
-  
+
   const handleSaveSettings = () => {
-    toast.success("Settings saved successfully", { position: "bottom-center" });
+    toast.success('Settings saved successfully', { position: 'bottom-center' });
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Admin Settings</h1>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -67,25 +67,15 @@ export default function AdminSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="theme">Dark Mode</Label>
-                <p className="text-sm text-muted-foreground">
-                  Switch between light and dark theme
-                </p>
+                <p className="text-sm text-muted-foreground">Switch between light and dark theme</p>
               </div>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={toggleTheme}
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
+              <Button variant="outline" size="icon" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
             </div>
-            
+
             <Separator />
-            
+
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="advanced">Advanced Mode</Label>
@@ -93,15 +83,11 @@ export default function AdminSettings() {
                   Enable additional features for advanced users
                 </p>
               </div>
-              <Switch
-                id="advanced"
-                checked={isAdvancedMode}
-                onCheckedChange={setIsAdvancedMode}
-              />
+              <Switch id="advanced" checked={isAdvancedMode} onCheckedChange={setIsAdvancedMode} />
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
@@ -111,9 +97,7 @@ export default function AdminSettings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="email-notifications">Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
-                </p>
+                <p className="text-sm text-muted-foreground">Receive notifications via email</p>
               </div>
               <Switch
                 id="email-notifications"
@@ -121,21 +105,21 @@ export default function AdminSettings() {
                 onCheckedChange={setIsEmailNotifications}
               />
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-2">
               <Label htmlFor="api-endpoint">API Endpoint</Label>
-              <Input 
-                id="api-endpoint" 
-                value={apiEndpoint} 
+              <Input
+                id="api-endpoint"
+                value={apiEndpoint}
                 onChange={(e) => setApiEndpoint(e.target.value)}
               />
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
@@ -167,7 +151,7 @@ export default function AdminSettings() {
                 )}
               </Button>
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Clear Data</h3>
               <p className="text-sm text-muted-foreground">
@@ -193,22 +177,16 @@ export default function AdminSettings() {
               </Button>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           <div className="flex justify-between items-center">
-            <Button 
-              onClick={handleSaveSettings}
-              className="px-8"
-            >
+            <Button onClick={handleSaveSettings} className="px-8">
               <Save className="mr-2 h-4 w-4" />
               Save Settings
             </Button>
-            
-            <Button 
-              variant="outline" 
-              onClick={logout}
-            >
+
+            <Button variant="outline" onClick={logout}>
               Logout
             </Button>
           </div>

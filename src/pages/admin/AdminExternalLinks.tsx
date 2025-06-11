@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -17,74 +17,74 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash, ExternalLink as ExternalLinkIcon } from "lucide-react";
-import { ExternalLink } from "@/contexts/DataContext";
-import ExternalLinkForm from "@/components/admin/ExternalLinkForm";
+} from '@/components/ui/table';
+import { toast } from 'sonner';
+import { Plus, Search, Pencil, Trash, ExternalLink as ExternalLinkIcon } from 'lucide-react';
+import { ExternalLink } from '@/contexts/DataContext';
+import ExternalLinkForm from '@/components/admin/ExternalLinkForm';
 
 export default function AdminExternalLinks() {
   const { externalLinks, projects, suppliers, deleteExternalLink } = useData();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
   const [projectFilter, setProjectFilter] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState<ExternalLink | undefined>(undefined);
-  
-  const filteredLinks = externalLinks.filter(link => {
-    const matchesSearch = 
-      search === "" ||
+
+  const filteredLinks = externalLinks.filter((link) => {
+    const matchesSearch =
+      search === '' ||
       link.title.toLowerCase().includes(search.toLowerCase()) ||
       link.url.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesType = typeFilter ? link.type === typeFilter : true;
     const matchesSupplier = supplierFilter ? link.supplierId === supplierFilter : true;
     const matchesProject = projectFilter ? link.projectId === projectFilter : true;
-    
+
     return matchesSearch && matchesType && matchesSupplier && matchesProject;
   });
-  
+
   const handleDeleteLink = (linkId: string) => {
-    if (confirm("Are you sure you want to delete this external link?")) {
+    if (confirm('Are you sure you want to delete this external link?')) {
       deleteExternalLink(linkId);
-      toast.success("External link deleted successfully");
+      toast.success('External link deleted successfully');
     }
   };
-  
+
   const handleEditLink = (link: ExternalLink) => {
     setSelectedLink(link);
     setIsFormOpen(true);
   };
-  
+
   const handleAddLink = () => {
     setSelectedLink(undefined);
     setIsFormOpen(true);
   };
-  
+
   const closeForm = () => {
     setIsFormOpen(false);
     setSelectedLink(undefined);
   };
-  
+
   // Helper functions to get names
   const getProjectName = (projectId: string | null): string => {
-    if (!projectId) return "N/A";
-    const project = projects.find(p => p.id === projectId);
-    return project ? project.name : "Unknown Project";
+    if (!projectId) return 'N/A';
+    const project = projects.find((p) => p.id === projectId);
+    return project ? project.name : 'Unknown Project';
   };
-  
+
   const getSupplierName = (supplierId: string | null): string => {
-    if (!supplierId) return "N/A";
-    const supplier = suppliers.find(s => s.id === supplierId);
-    return supplier ? supplier.name : "Unknown Supplier";
+    if (!supplierId) return 'N/A';
+    const supplier = suppliers.find((s) => s.id === supplierId);
+    return supplier ? supplier.name : 'Unknown Supplier';
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Manage External Links</h1>
-        
+
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -96,10 +96,10 @@ export default function AdminExternalLinks() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <Select
-            value={supplierFilter || "all"}
-            onValueChange={(value) => setSupplierFilter(value === "all" ? null : value)}
+            value={supplierFilter || 'all'}
+            onValueChange={(value) => setSupplierFilter(value === 'all' ? null : value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by Supplier" />
@@ -115,8 +115,8 @@ export default function AdminExternalLinks() {
           </Select>
 
           <Select
-            value={projectFilter || "all"}
-            onValueChange={(value) => setProjectFilter(value === "all" ? null : value)}
+            value={projectFilter || 'all'}
+            onValueChange={(value) => setProjectFilter(value === 'all' ? null : value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by Project" />
@@ -130,10 +130,10 @@ export default function AdminExternalLinks() {
               ))}
             </SelectContent>
           </Select>
-          
+
           <Select
-            value={typeFilter || "all"}
-            onValueChange={(value) => setTypeFilter(value === "all" ? null : value)}
+            value={typeFilter || 'all'}
+            onValueChange={(value) => setTypeFilter(value === 'all' ? null : value)}
           >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="Type" />
@@ -145,14 +145,14 @@ export default function AdminExternalLinks() {
               <SelectItem value="Tracking">Tracking</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Button onClick={handleAddLink}>
             <Plus className="mr-2 h-4 w-4" />
             Add Link
           </Button>
         </div>
       </div>
-      
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>External Links List</CardTitle>
@@ -175,12 +175,15 @@ export default function AdminExternalLinks() {
                   <TableRow key={link.id}>
                     <TableCell className="font-medium">{link.title}</TableCell>
                     <TableCell>
-                      <span 
+                      <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          link.type === "Report" ? "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300" :
-                          link.type === "Photo" ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300" :
-                          link.type === "Tracking" ? "bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-300" :
-                          "bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-300"
+                          link.type === 'Report'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300'
+                            : link.type === 'Photo'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300'
+                              : link.type === 'Tracking'
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-800/20 dark:text-amber-300'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-300'
                         }`}
                       >
                         {link.type}
@@ -189,9 +192,9 @@ export default function AdminExternalLinks() {
                     <TableCell>{getProjectName(link.projectId)}</TableCell>
                     <TableCell>{getSupplierName(link.supplierId)}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
-                      <a 
-                        href={link.url} 
-                        target="_blank" 
+                      <a
+                        href={link.url}
+                        target="_blank"
                         rel="noreferrer"
                         className="text-primary hover:underline flex items-center"
                       >
@@ -201,14 +204,10 @@ export default function AdminExternalLinks() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => handleEditLink(link)}
-                        >
+                        <Button variant="outline" size="icon" onClick={() => handleEditLink(link)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        
+
                         <Button
                           variant="destructive"
                           size="icon"
@@ -231,12 +230,8 @@ export default function AdminExternalLinks() {
           </Table>
         </CardContent>
       </Card>
-      
-      <ExternalLinkForm 
-        open={isFormOpen}
-        onClose={closeForm}
-        link={selectedLink}
-      />
+
+      <ExternalLinkForm open={isFormOpen} onClose={closeForm} link={selectedLink} />
     </div>
   );
 }

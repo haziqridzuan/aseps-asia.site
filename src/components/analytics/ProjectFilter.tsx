@@ -1,5 +1,4 @@
-
-import { Filter } from "lucide-react";
+import { Filter } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -7,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Project } from "@/contexts/DataContext";
+} from '@/components/ui/select';
+import { Project } from '@/contexts/DataContext';
 
 interface ProjectFilterProps {
   selectedProject: string;
@@ -16,7 +15,11 @@ interface ProjectFilterProps {
   projects: Project[];
 }
 
-export function ProjectFilter({ selectedProject, setSelectedProject, projects }: ProjectFilterProps) {
+export function ProjectFilter({
+  selectedProject,
+  setSelectedProject,
+  projects,
+}: ProjectFilterProps) {
   return (
     <div className="flex items-center gap-2">
       <Filter className="h-4 w-4" />
@@ -29,7 +32,7 @@ export function ProjectFilter({ selectedProject, setSelectedProject, projects }:
             <SelectItem value="all">All Projects</SelectItem>
             {projects.map((project) => (
               <SelectItem key={project.id} value={project.id}>
-                {project.name.substring(0, 20) + (project.name.length > 20 ? "..." : "")}
+                {project.name.substring(0, 20) + (project.name.length > 20 ? '...' : '')}
               </SelectItem>
             ))}
           </SelectGroup>

@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import '../styles/BackToTop.css';
 
 const BackToTop = (): JSX.Element => {
@@ -27,21 +22,17 @@ const BackToTop = (): JSX.Element => {
   const scrollToTop = (): void => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
   return (
-    <div className={`back-to-top-container ${isVisible ? 'visible' : ''}`}>
+    <div className={`scroll-top-container ${isVisible ? 'visible' : ''}`}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              className="back-to-top"
-              onClick={scrollToTop}
-              aria-label="Back to top"
-            >
-              <ArrowUp className="back-to-top-icon" />
+            <button className="scroll-top-btn" onClick={scrollToTop} aria-label="Back to top">
+              <ArrowUp className="scroll-top-icon" />
             </button>
           </TooltipTrigger>
           <TooltipContent side="left" className="font-medium">

@@ -1,7 +1,6 @@
-
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -9,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -18,68 +17,68 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Search, File } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Search, File } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ExternalLinks() {
   const { externalLinks, projects, suppliers } = useData();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [projectFilter, setProjectFilter] = useState<string | null>(null);
   const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
   const navigate = useNavigate();
-  
+
   // Filter external links based on search and filters
-  const filteredLinks = externalLinks.filter(link => {
-    const matchesSearch = search === "" || 
-      link.title.toLowerCase().includes(search.toLowerCase());
-    
+  const filteredLinks = externalLinks.filter((link) => {
+    const matchesSearch = search === '' || link.title.toLowerCase().includes(search.toLowerCase());
+
     const matchesType = typeFilter === null || link.type === typeFilter;
     const matchesProject = projectFilter === null || link.projectId === projectFilter;
-    const matchesSupplier = supplierFilter === null || (link.supplierId && link.supplierId === supplierFilter);
-    
+    const matchesSupplier =
+      supplierFilter === null || (link.supplierId && link.supplierId === supplierFilter);
+
     return matchesSearch && matchesType && matchesProject && matchesSupplier;
   });
-  
+
   // Function to get type badge color
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
-      case "Report":
-        return "bg-blue-500";
-      case "Photo":
-        return "bg-green-500";
-      case "Tracking":
-        return "bg-amber-500";
+      case 'Report':
+        return 'bg-blue-500';
+      case 'Photo':
+        return 'bg-green-500';
+      case 'Tracking':
+        return 'bg-amber-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
-  
+
   // Get project name by id
   const getProjectName = (projectId: string): string => {
-    const project = projects.find(p => p.id === projectId);
-    return project ? project.name : "Unknown Project";
+    const project = projects.find((p) => p.id === projectId);
+    return project ? project.name : 'Unknown Project';
   };
-  
+
   // Get supplier name by id
   const getSupplierName = (supplierId?: string): string => {
-    if (!supplierId) return "N/A";
-    const supplier = suppliers.find(s => s.id === supplierId);
-    return supplier ? supplier.name : "Unknown Supplier";
+    if (!supplierId) return 'N/A';
+    const supplier = suppliers.find((s) => s.id === supplierId);
+    return supplier ? supplier.name : 'Unknown Supplier';
   };
-  
+
   // Simulate opening local file
   const handleOpenFile = (url: string) => {
     console.log(`Opening file at: ${url}`);
-    
+
     // In a real app, this might link to a file server or cloud storage
     // For demo, show a notification
     alert(`Opening file: ${url}`);
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -88,7 +87,7 @@ export default function ExternalLinks() {
           External Links
         </h1>
       </div>
-      
+
       {/* Filters */}
       <Card>
         <CardContent className="py-6">
@@ -106,10 +105,13 @@ export default function ExternalLinks() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Type</label>
-              <Select value={typeFilter || "all"} onValueChange={(value) => setTypeFilter(value === "all" ? null : value)}>
+              <Select
+                value={typeFilter || 'all'}
+                onValueChange={(value) => setTypeFilter(value === 'all' ? null : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
@@ -121,16 +123,19 @@ export default function ExternalLinks() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Project</label>
-              <Select value={projectFilter || "all"} onValueChange={(value) => setProjectFilter(value === "all" ? null : value)}>
+              <Select
+                value={projectFilter || 'all'}
+                onValueChange={(value) => setProjectFilter(value === 'all' ? null : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Projects" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map(project => (
+                  {projects.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name}
                     </SelectItem>
@@ -138,16 +143,19 @@ export default function ExternalLinks() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Supplier</label>
-              <Select value={supplierFilter || "all"} onValueChange={(value) => setSupplierFilter(value === "all" ? null : value)}>
+              <Select
+                value={supplierFilter || 'all'}
+                onValueChange={(value) => setSupplierFilter(value === 'all' ? null : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Suppliers" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Suppliers</SelectItem>
-                  {suppliers.map(supplier => (
+                  {suppliers.map((supplier) => (
                     <SelectItem key={supplier.id} value={supplier.id}>
                       {supplier.name}
                     </SelectItem>
@@ -158,7 +166,7 @@ export default function ExternalLinks() {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* External Links Table */}
       <Card className="card-hover">
         <CardHeader className="pb-2">
@@ -179,7 +187,11 @@ export default function ExternalLinks() {
             <TableBody>
               {filteredLinks.length > 0 ? (
                 filteredLinks.map((link, index) => (
-                  <TableRow key={link.id} className="hover:bg-secondary/50 transition-colors animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                  <TableRow
+                    key={link.id}
+                    className="hover:bg-secondary/50 transition-colors animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell className="font-medium">
                       <div className="flex items-center">
                         <File className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -187,9 +199,7 @@ export default function ExternalLinks() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getTypeBadgeColor(link.type)}>
-                        {link.type}
-                      </Badge>
+                      <Badge className={getTypeBadgeColor(link.type)}>{link.type}</Badge>
                     </TableCell>
                     <TableCell>
                       <Button
@@ -210,15 +220,12 @@ export default function ExternalLinks() {
                           {getSupplierName(link.supplierId)}
                         </Button>
                       ) : (
-                        "N/A"
+                        'N/A'
                       )}
                     </TableCell>
                     <TableCell>{new Date(link.date).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Button 
-                        size="sm"
-                        onClick={() => handleOpenFile(link.url)}
-                      >
+                      <Button size="sm" onClick={() => handleOpenFile(link.url)}>
                         Open
                       </Button>
                     </TableCell>

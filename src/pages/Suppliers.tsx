@@ -1,8 +1,7 @@
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -10,49 +9,52 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Package, Search, Star } from "lucide-react";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Package, Search, Star } from 'lucide-react';
 
 export default function Suppliers() {
   const { suppliers, purchaseOrders, projects } = useData();
-  const [search, setSearch] = useState("");
-  
+  const [search, setSearch] = useState('');
+
   // Filter suppliers based on search
-  const filteredSuppliers = suppliers.filter(supplier =>
-    search === "" ||
-    supplier.name.toLowerCase().includes(search.toLowerCase()) ||
-    supplier.country.toLowerCase().includes(search.toLowerCase()) ||
-    supplier.contactPerson.toLowerCase().includes(search.toLowerCase())
+  const filteredSuppliers = suppliers.filter(
+    (supplier) =>
+      search === '' ||
+      supplier.name.toLowerCase().includes(search.toLowerCase()) ||
+      supplier.country.toLowerCase().includes(search.toLowerCase()) ||
+      supplier.contactPerson.toLowerCase().includes(search.toLowerCase()),
   );
-  
+
   // Get active project count for a supplier
   const getActiveProjectCount = (supplierId: string): number => {
-    const projectIds = [...new Set(
-      purchaseOrders
-        .filter(po => po.supplierId === supplierId && po.status !== "Completed")
-        .map(po => po.projectId)
-    )];
-    
+    const projectIds = [
+      ...new Set(
+        purchaseOrders
+          .filter((po) => po.supplierId === supplierId && po.status !== 'Completed')
+          .map((po) => po.projectId),
+      ),
+    ];
+
     return projectIds.length;
   };
-  
+
   // Render stars for rating
   const renderRating = (rating: number) => {
     const stars = [];
-    
+
     for (let i = 0; i < 5; i++) {
       stars.push(
         <Star
           key={i}
-          className={`h-4 w-4 ${i < rating ? "text-amber-500 fill-amber-500" : "text-gray-300"}`}
-        />
+          className={`h-4 w-4 ${i < rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
+        />,
       );
     }
-    
+
     return <div className="flex">{stars}</div>;
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -60,7 +62,7 @@ export default function Suppliers() {
           <Package className="h-6 w-6 mr-2" />
           Suppliers
         </h1>
-        
+
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -72,7 +74,7 @@ export default function Suppliers() {
           />
         </div>
       </div>
-      
+
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -89,9 +91,16 @@ export default function Suppliers() {
             <TableBody>
               {filteredSuppliers.length > 0 ? (
                 filteredSuppliers.map((supplier, index) => (
-                  <TableRow key={supplier.id} className="hover:bg-secondary/50 transition-colors animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                  <TableRow
+                    key={supplier.id}
+                    className="hover:bg-secondary/50 transition-colors animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
                     <TableCell>
-                      <Link to={`/suppliers/${supplier.id}`} className="font-medium hover:text-primary transition-colors">
+                      <Link
+                        to={`/suppliers/${supplier.id}`}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
                         {supplier.name}
                       </Link>
                     </TableCell>
@@ -106,8 +115,8 @@ export default function Suppliers() {
                     <TableCell>
                       <div className="flex items-center">
                         <div className="w-[100px] bg-gray-200 rounded-full h-2 mr-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full" 
+                          <div
+                            className="bg-primary h-2 rounded-full"
                             style={{ width: `${supplier.onTimeDelivery}%` }}
                           ></div>
                         </div>

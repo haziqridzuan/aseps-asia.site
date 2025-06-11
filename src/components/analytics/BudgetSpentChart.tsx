@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
   Bar,
@@ -8,9 +8,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   LabelList,
-  LabelProps
-} from "recharts";
-import { Project, PurchaseOrder } from "@/contexts/DataContext";
+  LabelProps,
+} from 'recharts';
+import { Project, PurchaseOrder } from '@/contexts/DataContext';
 
 interface BudgetSpentChartProps {
   spentByProject: Array<{
@@ -61,7 +61,14 @@ export function BudgetSpentChart({ spentByProject, budgetColors }: BudgetSpentCh
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" tick={{ fontSize: 14 }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="name" type="category" width={220} tick={{ fontSize: 15, fontWeight: 600 }} axisLine={false} tickLine={false} />
+              <YAxis
+                dataKey="name"
+                type="category"
+                width={220}
+                tick={{ fontSize: 15, fontWeight: 600 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Amount Spent']} />
               <Bar
                 dataKey="spent"

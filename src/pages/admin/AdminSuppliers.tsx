@@ -1,17 +1,16 @@
-
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SupplierForm } from "@/components/admin/SupplierForm";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { SupplierForm } from '@/components/admin/SupplierForm';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -19,46 +18,47 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash } from "lucide-react";
+} from '@/components/ui/table';
+import { toast } from 'sonner';
+import { Plus, Search, Pencil, Trash } from 'lucide-react';
 
 export default function AdminSuppliers() {
   const { suppliers, deleteSupplier, purchaseOrders } = useData();
-  const [search, setSearch] = useState("");
-  
-  const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(search.toLowerCase()) ||
-    supplier.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
-    supplier.email.toLowerCase().includes(search.toLowerCase()) ||
-    supplier.country.toLowerCase().includes(search.toLowerCase())
+  const [search, setSearch] = useState('');
+
+  const filteredSuppliers = suppliers.filter(
+    (supplier) =>
+      supplier.name.toLowerCase().includes(search.toLowerCase()) ||
+      supplier.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
+      supplier.email.toLowerCase().includes(search.toLowerCase()) ||
+      supplier.country.toLowerCase().includes(search.toLowerCase()),
   );
-  
+
   const handleDeleteSupplier = (supplierId: string) => {
     // Check if supplier has associated purchase orders
-    const supplierPOs = purchaseOrders.filter(po => po.supplierId === supplierId);
-    
+    const supplierPOs = purchaseOrders.filter((po) => po.supplierId === supplierId);
+
     if (supplierPOs.length > 0) {
-      toast.error("Cannot delete supplier with associated purchase orders");
+      toast.error('Cannot delete supplier with associated purchase orders');
       return;
     }
-    
-    if (confirm("Are you sure you want to delete this supplier?")) {
+
+    if (confirm('Are you sure you want to delete this supplier?')) {
       deleteSupplier(supplierId);
-      toast.success("Supplier deleted successfully");
+      toast.success('Supplier deleted successfully');
     }
   };
-  
+
   // Get purchase order count for a supplier
   const getSupplierPOCount = (supplierId: string): number => {
-    return purchaseOrders.filter(po => po.supplierId === supplierId).length;
+    return purchaseOrders.filter((po) => po.supplierId === supplierId).length;
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Manage Suppliers</h1>
-        
+
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -70,7 +70,7 @@ export default function AdminSuppliers() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <Dialog>
             <DialogTrigger asChild>
               <Button>
@@ -82,17 +82,21 @@ export default function AdminSuppliers() {
               <DialogHeader>
                 <DialogTitle>Add New Supplier</DialogTitle>
               </DialogHeader>
-              <SupplierForm 
+              <SupplierForm
                 onSuccess={() => {
-                  toast.success("Supplier created successfully");
-                  document.querySelector<HTMLButtonElement>("[data-state='open'] button[aria-label='Close']")?.click();
+                  toast.success('Supplier created successfully');
+                  document
+                    .querySelector<HTMLButtonElement>(
+                      "[data-state='open'] button[aria-label='Close']",
+                    )
+                    ?.click();
                 }}
               />
             </DialogContent>
           </Dialog>
         </div>
       </div>
-      
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>Supplier List</CardTitle>
@@ -122,10 +126,7 @@ export default function AdminSuppliers() {
                       <div className="flex justify-end gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="icon"
-                            >
+                            <Button variant="outline" size="icon">
                               <Pencil className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
@@ -133,16 +134,20 @@ export default function AdminSuppliers() {
                             <DialogHeader>
                               <DialogTitle>Edit Supplier</DialogTitle>
                             </DialogHeader>
-                            <SupplierForm 
+                            <SupplierForm
                               supplierId={supplier.id}
                               onSuccess={() => {
-                                toast.success("Supplier updated successfully");
-                                document.querySelector<HTMLButtonElement>("[data-state='open'] button[aria-label='Close']")?.click();
+                                toast.success('Supplier updated successfully');
+                                document
+                                  .querySelector<HTMLButtonElement>(
+                                    "[data-state='open'] button[aria-label='Close']",
+                                  )
+                                  ?.click();
                               }}
                             />
                           </DialogContent>
                         </Dialog>
-                        
+
                         <Button
                           variant="destructive"
                           size="icon"

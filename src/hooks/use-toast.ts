@@ -1,6 +1,5 @@
-
-import * as React from "react";
-import { toast as sonnerToast } from "sonner";
+import * as React from 'react';
+import { toast as sonnerToast } from 'sonner';
 
 type ToastProps = {
   title?: React.ReactNode;
@@ -27,10 +26,7 @@ const useToast = () => {
       ...props,
     });
 
-    setToasts((currentToasts) => [
-      ...currentToasts,
-      { ...props, id: Math.random().toString() },
-    ]);
+    setToasts((currentToasts) => [...currentToasts, { ...props, id: Math.random().toString() }]);
   }, []);
 
   return { toast, toasts, dismiss: () => setToasts([]) };

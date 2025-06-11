@@ -1,48 +1,142 @@
-# ASEPS Asia Website
+# ASEPS Asia - Project Management Dashboard
 
-Welcome to the official repository for the [ASEPS Asia](https://aseps-asia.site) website. This site serves as the digital presence for ASEPS Asia, showcasing our capabilities, expertise, and projects across the industrial, engineering, and powder processing sectors.
+## 🚀 Overview
+ASEPS Asia is a comprehensive project management and supplier relationship platform designed to streamline construction project workflows, supplier management, and project analytics. Built with modern web technologies, it provides an intuitive interface for managing projects, suppliers, and purchase orders in the construction industry.
 
-## 🌐 Live Site
+## ✨ Features
 
-Visit the live site here: [https://aseps-asia.site](https://aseps-asia.site)
+- **Project Management**: Track and manage construction projects with detailed views
+- **Supplier Portal**: Maintain supplier information and track relationships
+- **Purchase Orders**: Create and manage purchase orders with ease
+- **Analytics Dashboard**: Visualize project metrics and KPIs
+- **Client Management**: Keep track of client information and project history
+- **Document Management**: Store and manage project-related documents
+- **Timeline View**: Visualize project timelines and milestones
 
-## 🚀 Project Overview
+## 🛠️ Tech Stack
 
-ASEPS Asia provides high-quality solutions and services in the field of powder processing, industrial automation, and project management. This website is designed as a professional landing page to present our services, experience, and contact information to potential clients and partners.
+- **Frontend**: 
+  - React 18 with TypeScript
+  - Vite for fast development and building
+  - Shadcn UI components
+  - Radix UI primitives
+  - Tailwind CSS for styling
+  - Framer Motion for animations
 
-## 📁 Project Structure
+- **State Management & Data Fetching**:
+  - React Query for server state management
+  - React Hook Form for form handling
+  - Zod for schema validation
 
-This site is deployed on [Netlify](https://www.netlify.com/) and connected to this GitHub repository. The stack may include:
+- **Backend & Storage**:
+  - Supabase for authentication and database
+  - RESTful API integration
 
-- **HTML / TailwindCSS** or a site builder (e.g., Lovable, Framer, etc.)
-- **Netlify** for hosting and CI/CD
-- **Supabase** for backend data (if dynamic content is present)
+- **Development Tools**:
+  - ESLint for code linting
+  - Prettier for code formatting
+  - TypeScript for type safety
 
-## 🛠️ Features
+## 🚀 Getting Started
 
-- Responsive, mobile-friendly design
-- Service and project overviews
-- Contact section
-- SEO-optimized content
-- Fast and secure static hosting
+### Prerequisites
 
-## 📦 Deployment
+- Node.js (v16 or later)
+- npm or yarn
+- Supabase account (for backend services)
 
-The site is continuously deployed through Netlify. Any changes pushed to the main branch will automatically trigger a redeploy.
+### Installation
 
-### Deploy Settings
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/aseps-asia.git
+   cd aseps-asia
+   ```
 
-- **Build Command**: _Depends on the framework used (e.g., `npm run build` or static export)_
-- **Publish Directory**: `dist/` or root folder (`/`), depending on the site builder
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/                 # App configuration and routing
+├── components/          # Reusable UI components
+├── contexts/            # React contexts for state management
+├── data/                # Static data and configurations
+├── hooks/               # Custom React hooks
+├── integrations/        # Third-party integrations
+├── lib/                 # Utility functions and helpers
+├── pages/               # Page components
+│   ├── admin/           # Admin-specific pages
+│   ├── feedback/        # Feedback-related pages
+│   └── purchase-orders/ # Purchase order management
+├── services/            # API services and data fetching
+└── styles/              # Global styles and themes
+```
+
+## 🧪 Testing
+
+Run the test suite:
+```bash
+npm test
+# or
+yarn test
+```
+
+## 🧹 Linting
+
+Check for linting errors:
+```bash
+npm run lint
+# or
+yarn lint
+```
+
+## 🏭 Building for Production
+
+Create a production build:
+```bash
+npm run build
+# or
+yarn build
+```
 
 ## 🤝 Contributing
 
-Currently, this is a private project maintained by the ASEPS Asia team. For suggestions, please open an issue or contact via the site’s contact form.
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📬 Contact
+## 📄 License
 
-If you have inquiries or collaboration opportunities, visit our contact page at [https://aseps-asia.site](https://aseps-asia.site) or email us directly via the contact form.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## 🙏 Acknowledgments
 
-© ASEPS Asia. All rights reserved.
+- [Vite](https://vitejs.dev/) for the amazing build tool
+- [Shadcn UI](https://ui.shadcn.com/) for the beautiful components
+- [Supabase](https://supabase.com/) for the backend services
+- All the amazing open-source libraries that made this project possible

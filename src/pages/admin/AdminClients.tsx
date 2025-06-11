@@ -1,17 +1,16 @@
-
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ClientForm } from "@/components/admin/ClientForm";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ClientForm } from '@/components/admin/ClientForm';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -19,48 +18,49 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash } from "lucide-react";
+} from '@/components/ui/table';
+import { toast } from 'sonner';
+import { Plus, Search, Pencil, Trash } from 'lucide-react';
 
 export default function AdminClients() {
   const { clients, deleteClient, projects } = useData();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(search.toLowerCase()) ||
-    client.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
-    client.email.toLowerCase().includes(search.toLowerCase()) ||
-    client.location.toLowerCase().includes(search.toLowerCase())
+
+  const filteredClients = clients.filter(
+    (client) =>
+      client.name.toLowerCase().includes(search.toLowerCase()) ||
+      client.contactPerson.toLowerCase().includes(search.toLowerCase()) ||
+      client.email.toLowerCase().includes(search.toLowerCase()) ||
+      client.location.toLowerCase().includes(search.toLowerCase()),
   );
-  
+
   const handleDeleteClient = (clientId: string) => {
     // Check if client has associated projects
-    const clientProjects = projects.filter(p => p.clientId === clientId);
-    
+    const clientProjects = projects.filter((p) => p.clientId === clientId);
+
     if (clientProjects.length > 0) {
-      toast.error("Cannot delete client with associated projects");
+      toast.error('Cannot delete client with associated projects');
       return;
     }
-    
-    if (confirm("Are you sure you want to delete this client?")) {
+
+    if (confirm('Are you sure you want to delete this client?')) {
       deleteClient(clientId);
-      toast.success("Client deleted successfully");
+      toast.success('Client deleted successfully');
     }
   };
-  
+
   // Get project count for a client
   const getClientProjectCount = (clientId: string): number => {
-    return projects.filter(p => p.clientId === clientId).length;
+    return projects.filter((p) => p.clientId === clientId).length;
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold">Manage Clients</h1>
-        
+
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -72,7 +72,7 @@ export default function AdminClients() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <Dialog>
             <DialogTrigger asChild>
               <Button>
@@ -84,17 +84,21 @@ export default function AdminClients() {
               <DialogHeader>
                 <DialogTitle>Add New Client</DialogTitle>
               </DialogHeader>
-              <ClientForm 
+              <ClientForm
                 onSuccess={() => {
-                  toast.success("Client created successfully");
-                  document.querySelector<HTMLButtonElement>("[data-state='open'] button[aria-label='Close']")?.click();
+                  toast.success('Client created successfully');
+                  document
+                    .querySelector<HTMLButtonElement>(
+                      "[data-state='open'] button[aria-label='Close']",
+                    )
+                    ?.click();
                 }}
               />
             </DialogContent>
           </Dialog>
         </div>
       </div>
-      
+
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>Client List</CardTitle>
@@ -124,8 +128,8 @@ export default function AdminClients() {
                       <div className="flex justify-end gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="icon"
                               onClick={() => setSelectedClientId(client.id)}
                             >
@@ -136,16 +140,20 @@ export default function AdminClients() {
                             <DialogHeader>
                               <DialogTitle>Edit Client</DialogTitle>
                             </DialogHeader>
-                            <ClientForm 
+                            <ClientForm
                               clientId={client.id}
                               onSuccess={() => {
-                                toast.success("Client updated successfully");
-                                document.querySelector<HTMLButtonElement>("[data-state='open'] button[aria-label='Close']")?.click();
+                                toast.success('Client updated successfully');
+                                document
+                                  .querySelector<HTMLButtonElement>(
+                                    "[data-state='open'] button[aria-label='Close']",
+                                  )
+                                  ?.click();
                               }}
                             />
                           </DialogContent>
                         </Dialog>
-                        
+
                         <Button
                           variant="destructive"
                           size="icon"

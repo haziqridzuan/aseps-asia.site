@@ -1,6 +1,5 @@
-
-import { useState } from "react";
-import { useData } from "@/contexts/DataContext";
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
 import {
   Table,
   TableBody,
@@ -8,18 +7,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,81 +23,82 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ProjectForm } from "@/components/admin/ProjectForm";
-import { File, Plus, Search, Pencil, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/alert-dialog';
+import { ProjectForm } from '@/components/admin/ProjectForm';
+import { File, Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminProjects() {
   const { projects, clients, deleteProject } = useData();
   const { toast } = useToast();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
-  
+
   // Filter projects based on search
-  const filteredProjects = projects.filter(project =>
-    search === "" ||
-    project.name.toLowerCase().includes(search.toLowerCase()) ||
-    project.location.toLowerCase().includes(search.toLowerCase())
+  const filteredProjects = projects.filter(
+    (project) =>
+      search === '' ||
+      project.name.toLowerCase().includes(search.toLowerCase()) ||
+      project.location.toLowerCase().includes(search.toLowerCase()),
   );
-  
+
   // Get client name by ID
   const getClientName = (clientId: string) => {
-    const client = clients.find(c => c.id === clientId);
-    return client ? client.name : "Unknown Client";
+    const client = clients.find((c) => c.id === clientId);
+    return client ? client.name : 'Unknown Client';
   };
-  
+
   // Function to get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "In Progress":
-        return "bg-blue-500";
-      case "Completed":
-        return "bg-green-500";
-      case "Pending":
-        return "bg-amber-500";
-      case "Delayed":
-        return "bg-red-500";
+      case 'In Progress':
+        return 'bg-blue-500';
+      case 'Completed':
+        return 'bg-green-500';
+      case 'Pending':
+        return 'bg-amber-500';
+      case 'Delayed':
+        return 'bg-red-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
-  
+
   // Handle edit project
   const handleEdit = (projectId: string) => {
     setEditingProjectId(projectId);
     setOpenDialog(true);
   };
-  
+
   // Handle delete project
   const handleDelete = (projectId: string) => {
     setDeleteProjectId(projectId);
     setOpenDeleteAlert(true);
   };
-  
+
   // Confirm delete project
   const confirmDelete = () => {
     if (deleteProjectId) {
       deleteProject(deleteProjectId);
       toast({
-        title: "Project deleted",
-        description: "The project has been deleted successfully",
+        title: 'Project deleted',
+        description: 'The project has been deleted successfully',
       });
       setOpenDeleteAlert(false);
       setDeleteProjectId(null);
     }
   };
-  
+
   // Get project name for delete confirmation
   const getDeleteProjectName = () => {
-    if (!deleteProjectId) return "";
-    const project = projects.find(p => p.id === deleteProjectId);
-    return project ? project.name : "";
+    if (!deleteProjectId) return '';
+    const project = projects.find((p) => p.id === deleteProjectId);
+    return project ? project.name : '';
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -111,7 +106,7 @@ export default function AdminProjects() {
           <File className="h-6 w-6 mr-2" />
           Manage Projects
         </h1>
-        
+
         <div className="flex gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -123,7 +118,7 @@ export default function AdminProjects() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <Button
             onClick={() => {
               setEditingProjectId(null);
@@ -134,7 +129,7 @@ export default function AdminProjects() {
           </Button>
         </div>
       </div>
-      
+
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -155,9 +150,7 @@ export default function AdminProjects() {
                     <TableCell className="font-medium">{project.name}</TableCell>
                     <TableCell>{getClientName(project.clientId)}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
-                      </Badge>
+                      <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -168,11 +161,7 @@ export default function AdminProjects() {
                     <TableCell>{project.location}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(project.id)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(project.id)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -197,12 +186,12 @@ export default function AdminProjects() {
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Add/Edit Project Dialog */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{editingProjectId ? "Edit Project" : "Add Project"}</DialogTitle>
+            <DialogTitle>{editingProjectId ? 'Edit Project' : 'Add Project'}</DialogTitle>
           </DialogHeader>
           <ProjectForm
             projectId={editingProjectId || undefined}
@@ -211,15 +200,15 @@ export default function AdminProjects() {
           />
         </DialogContent>
       </Dialog>
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={openDeleteAlert} onOpenChange={setOpenDeleteAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the project "{getDeleteProjectName()}".
-              This action cannot be undone.
+              This will permanently delete the project "{getDeleteProjectName()}". This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

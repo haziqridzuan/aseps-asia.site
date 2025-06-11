@@ -1,15 +1,15 @@
-import React from "react";
-import "./ThemeToggle.css";
-import { useTheme } from "@/contexts/ThemeContext";
+import React from 'react';
+import './ThemeToggle.css';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
-  const dark = theme === "dark";
+  const dark = theme === 'dark';
 
   return (
-    <div className={`toggle-container ${dark ? "dark" : "light"}`} onClick={toggleTheme}>
+    <div className={`toggle-container ${dark ? 'dark' : 'light'}`} onClick={toggleTheme}>
       <div className="toggle-switch">
-        <div className={`toggle-thumb ${dark ? "thumb-dark" : "thumb-light"}`}> 
+        <div className={`toggle-thumb ${dark ? 'thumb-dark' : 'thumb-light'}`}>
           {dark ? (
             <div className="moon">
               <div className="moon-crater" />
@@ -28,4 +28,4 @@ const ThemeToggle = () => {
   );
 };
 
-export default ThemeToggle; 
+export default ThemeToggle;

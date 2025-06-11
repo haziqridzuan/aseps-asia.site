@@ -1,8 +1,8 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useData } from "@/contexts/DataContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useData } from '@/contexts/DataContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -10,97 +10,100 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { ChevronLeft, Star } from "lucide-react";
+} from '@/components/ui/table';
+import { ChevronLeft, Star } from 'lucide-react';
 
 export default function SupplierDetails() {
   const { supplierId } = useParams<{ supplierId: string }>();
   const navigate = useNavigate();
   const { suppliers, purchaseOrders, projects } = useData();
-  
+
   // Find the supplier
-  const supplier = suppliers.find(s => s.id === supplierId);
-  
+  const supplier = suppliers.find((s) => s.id === supplierId);
+
   // If supplier not found, show error and return to suppliers list
   if (!supplier) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh]">
         <h2 className="text-2xl font-bold mb-4">Supplier not found</h2>
-        <Button onClick={() => navigate("/suppliers")}>Back to Suppliers</Button>
+        <Button onClick={() => navigate('/suppliers')}>Back to Suppliers</Button>
       </div>
     );
   }
-  
+
   // Get POs related to this supplier and group by base PO number (before underscore)
-  const supplierPOs = purchaseOrders.filter(po => po.supplierId === supplier.id);
-  
+  const supplierPOs = purchaseOrders.filter((po) => po.supplierId === supplier.id);
+
   // Group POs by their base PO number (before the first underscore)
-  const poGroups = supplierPOs.reduce((groups, po) => {
-    const basePONumber = po.poNumber.split('_')[0];
-    if (!groups[basePONumber]) {
-      groups[basePONumber] = [];
-    }
-    groups[basePONumber].push(po);
-    return groups;
-  }, {} as Record<string, typeof supplierPOs>);
-  
+  const poGroups = supplierPOs.reduce(
+    (groups, po) => {
+      const basePONumber = po.poNumber.split('_')[0];
+      if (!groups[basePONumber]) {
+        groups[basePONumber] = [];
+      }
+      groups[basePONumber].push(po);
+      return groups;
+    },
+    {} as Record<string, typeof supplierPOs>,
+  );
+
   // Count unique POs (grouped by base PO number)
   const totalPOs = Object.keys(poGroups).length;
-  
+
   // Count completed POs (all variants must be completed)
-  const completedPOs = Object.values(poGroups).filter(pos => 
-    pos.every(po => po.status === "Completed")
+  const completedPOs = Object.values(poGroups).filter((pos) =>
+    pos.every((po) => po.status === 'Completed'),
   ).length;
-  
+
   // Get projects involving this supplier
-  const projectIds = [...new Set(supplierPOs.map(po => po.projectId))];
-  const supplierProjects = projects.filter(p => projectIds.includes(p.id));
-  
+  const projectIds = [...new Set(supplierPOs.map((po) => po.projectId))];
+  const supplierProjects = projects.filter((p) => projectIds.includes(p.id));
+
   // Render stars for rating
   const renderRating = (rating: number) => {
     const stars = [];
-    
+
     for (let i = 0; i < 5; i++) {
       stars.push(
         <Star
           key={i}
-          className={`h-5 w-5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-gray-300"}`}
-        />
+          className={`h-5 w-5 ${i < rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
+        />,
       );
     }
-    
+
     return <div className="flex">{stars}</div>;
   };
-  
+
   // Function to get badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "In Progress":
-        return "bg-blue-500";
-      case "Completed":
-        return "bg-green-500";
-      case "Pending":
-        return "bg-amber-500";
-      case "Delayed":
-      case "Active":
-        return "bg-red-500";
+      case 'In Progress':
+        return 'bg-blue-500';
+      case 'Completed':
+        return 'bg-green-500';
+      case 'Pending':
+        return 'bg-amber-500';
+      case 'Delayed':
+      case 'Active':
+        return 'bg-red-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Button 
-          variant="ghost" 
-          className="mb-4 flex items-center" 
-          onClick={() => navigate("/suppliers")}
+        <Button
+          variant="ghost"
+          className="mb-4 flex items-center"
+          onClick={() => navigate('/suppliers')}
         >
           <ChevronLeft className="h-4 w-4 mr-1" /> Back to Suppliers
         </Button>
-        
+
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold animate-fade-in">{supplier.name}</h1>
@@ -108,7 +111,7 @@ export default function SupplierDetails() {
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Supplier Information */}
         <Card className="card-hover">
@@ -121,17 +124,17 @@ export default function SupplierDetails() {
                 <dt className="text-sm font-medium text-muted-foreground">Contact Person</dt>
                 <dd className="font-medium">{supplier.contactPerson}</dd>
               </div>
-              
+
               <div className="flex flex-col">
                 <dt className="text-sm font-medium text-muted-foreground">Email</dt>
                 <dd>{supplier.email}</dd>
               </div>
-              
+
               <div className="flex flex-col">
                 <dt className="text-sm font-medium text-muted-foreground">Phone</dt>
                 <dd>{supplier.phone}</dd>
               </div>
-              
+
               <div className="flex flex-col">
                 <dt className="text-sm font-medium text-muted-foreground">Location</dt>
                 <dd>{supplier.country}</dd>
@@ -139,7 +142,7 @@ export default function SupplierDetails() {
             </dl>
           </CardContent>
         </Card>
-        
+
         {/* Supplier Performance */}
         <Card className="card-hover">
           <CardHeader className="pb-2">
@@ -154,12 +157,12 @@ export default function SupplierDetails() {
                   <span className="text-lg font-medium">{supplier.rating.toFixed(1)}/5</span>
                 </div>
               </div>
-              
+
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-1">On-Time Delivery</p>
                 <div className="flex items-center gap-2">
                   <div className="w-full h-4 bg-gray-200 rounded-full">
-                    <div 
+                    <div
                       className={`h-4 rounded-full ${supplier.onTimeDelivery > 90 ? 'bg-green-500' : supplier.onTimeDelivery > 75 ? 'bg-amber-500' : 'bg-red-500'}`}
                       style={{ width: `${supplier.onTimeDelivery}%` }}
                     ></div>
@@ -167,7 +170,7 @@ export default function SupplierDetails() {
                   <span className="text-lg font-medium">{supplier.onTimeDelivery}%</span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="stat-card">
                   <div>
@@ -175,7 +178,7 @@ export default function SupplierDetails() {
                     <p className="text-xl font-bold">{totalPOs}</p>
                   </div>
                 </div>
-                
+
                 <div className="stat-card">
                   <div>
                     <p className="text-sm text-muted-foreground">Completed POs</p>
@@ -187,7 +190,7 @@ export default function SupplierDetails() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Projects Involved */}
       <Card className="card-hover">
         <CardHeader className="pb-2">
@@ -205,7 +208,10 @@ export default function SupplierDetails() {
             <TableBody>
               {supplierProjects.length > 0 ? (
                 supplierProjects.map((project) => (
-                  <TableRow key={project.id} className="hover:bg-secondary/50 transition-colors animate-fade-in">
+                  <TableRow
+                    key={project.id}
+                    className="hover:bg-secondary/50 transition-colors animate-fade-in"
+                  >
                     <TableCell>
                       <Button
                         variant="link"
@@ -216,15 +222,13 @@ export default function SupplierDetails() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(project.status)}>
-                        {project.status}
-                      </Badge>
+                      <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-[100px] bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full" 
+                          <div
+                            className="bg-primary h-2 rounded-full"
                             style={{ width: `${project.progress}%` }}
                           ></div>
                         </div>
@@ -244,7 +248,7 @@ export default function SupplierDetails() {
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Purchase Orders */}
       <Card className="card-hover">
         <CardHeader className="pb-2">
@@ -264,17 +268,27 @@ export default function SupplierDetails() {
             <TableBody>
               {supplierPOs.length > 0 ? (
                 Object.values(
-                  supplierPOs.reduce((acc, po) => {
-                    const key = `${po.poNumber}__${po.projectId}`;
-                    if (!acc[key]) acc[key] = { poNumber: po.poNumber, projectId: po.projectId, pos: [] };
-                    acc[key].pos.push(po);
-                    return acc;
-                  }, {} as Record<string, { poNumber: string; projectId: string; pos: typeof supplierPOs }>))
-                .map((group, idx) => {
-                  const project = projects.find(p => p.id === group.projectId);
-                  const statuses = [...new Set(group.pos.map(po => po.status))];
+                  supplierPOs.reduce(
+                    (acc, po) => {
+                      const key = `${po.poNumber}__${po.projectId}`;
+                      if (!acc[key])
+                        acc[key] = { poNumber: po.poNumber, projectId: po.projectId, pos: [] };
+                      acc[key].pos.push(po);
+                      return acc;
+                    },
+                    {} as Record<
+                      string,
+                      { poNumber: string; projectId: string; pos: typeof supplierPOs }
+                    >,
+                  ),
+                ).map((group, idx) => {
+                  const project = projects.find((p) => p.id === group.projectId);
+                  const statuses = [...new Set(group.pos.map((po) => po.status))];
                   return (
-                    <TableRow key={group.poNumber + group.projectId + idx} className="hover:bg-secondary/50 transition-colors animate-fade-in">
+                    <TableRow
+                      key={group.poNumber + group.projectId + idx}
+                      className="hover:bg-secondary/50 transition-colors animate-fade-in"
+                    >
                       <TableCell className="font-medium">{group.poNumber}</TableCell>
                       <TableCell>
                         {project ? (
@@ -286,7 +300,7 @@ export default function SupplierDetails() {
                             <Link to={`/projects/${project.id}`}>{project.name}</Link>
                           </Button>
                         ) : (
-                          "Unknown Project"
+                          'Unknown Project'
                         )}
                       </TableCell>
                       <TableCell>
@@ -324,7 +338,7 @@ export default function SupplierDetails() {
           </Table>
         </CardContent>
       </Card>
-      
+
       {/* Comments */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Positive Comments */}
@@ -336,7 +350,10 @@ export default function SupplierDetails() {
             {supplier.positiveComments && supplier.positiveComments.length > 0 ? (
               <ul className="space-y-2">
                 {supplier.positiveComments.map((comment, index) => (
-                  <li key={index} className="p-2 bg-green-50 rounded-md text-green-800 animate-fade-in">
+                  <li
+                    key={index}
+                    className="p-2 bg-green-50 rounded-md text-green-800 animate-fade-in"
+                  >
                     • {comment}
                   </li>
                 ))}
@@ -346,11 +363,13 @@ export default function SupplierDetails() {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Negative Comments */}
         <Card className="card-hover">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium text-red-600">Areas for Improvement</CardTitle>
+            <CardTitle className="text-lg font-medium text-red-600">
+              Areas for Improvement
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {supplier.negativeComments && supplier.negativeComments.length > 0 ? (

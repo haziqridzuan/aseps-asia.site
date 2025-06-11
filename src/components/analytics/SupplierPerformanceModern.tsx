@@ -1,6 +1,6 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface SupplierPerformanceModernProps {
   data: {
@@ -26,14 +26,14 @@ export const SupplierPerformanceModern: React.FC<SupplierPerformanceModernProps>
               </div>
               {/* Rating Dots */}
               <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map(i => (
+                {[1, 2, 3, 4, 5].map((i) => (
                   <span
                     key={i}
                     className={cn(
-                      "inline-block w-2.5 h-2.5 rounded-full",
+                      'inline-block w-2.5 h-2.5 rounded-full',
                       i <= Math.round(supplier.rating)
-                        ? "bg-yellow-400 shadow-md"
-                        : "bg-yellow-100 dark:bg-gray-700"
+                        ? 'bg-yellow-400 shadow-md'
+                        : 'bg-yellow-100 dark:bg-gray-700',
                     )}
                   />
                 ))}
@@ -48,7 +48,12 @@ export const SupplierPerformanceModern: React.FC<SupplierPerformanceModernProps>
                 {/* White Knob with Value */}
                 <div
                   className="absolute top-1/2 -translate-y-1/2 rounded-full bg-white shadow-lg border-2 border-cyan-300 flex items-center justify-center"
-                  style={{ left: `calc(${supplier.onTimeDelivery}% - 20px)`, width: 40, height: 40, zIndex: 2 }}
+                  style={{
+                    left: `calc(${supplier.onTimeDelivery}% - 20px)`,
+                    width: 40,
+                    height: 40,
+                    zIndex: 2,
+                  }}
                 >
                   <span className="font-bold text-cyan-500 text-lg drop-shadow-md">
                     {supplier.onTimeDelivery}%
@@ -65,8 +70,11 @@ export const SupplierPerformanceModern: React.FC<SupplierPerformanceModernProps>
             <span className="text-sm text-gray-700 dark:text-gray-200">On-Time Delivery (%)</span>
           </div>
           <div className="flex items-center gap-2">
-            {[1,2,3,4,5].map(i => (
-              <span key={i} className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-md" />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <span
+                key={i}
+                className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-md"
+              />
             ))}
             <span className="text-sm text-gray-700 dark:text-gray-200 ml-2">Rating (out of 5)</span>
           </div>
@@ -74,4 +82,4 @@ export const SupplierPerformanceModern: React.FC<SupplierPerformanceModernProps>
       </CardContent>
     </Card>
   );
-}; 
+};

@@ -1,7 +1,7 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, TooltipProps } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
-import React from "react";
+import React from 'react';
 
 interface PartStatus {
   name: string;
@@ -15,16 +15,21 @@ interface PartsProgressPieChartProps {
 
 // Badge colors from the second image
 const statusColors: Record<string, string> = {
-  "Manufacturing": "#3b9cff", // blue with glow
-  "Not Started": "#ff9800",   // orange with glow
-  "Preparation": "#b983ff",   // purple with glow
-  "Purchasing": "#bdbdbd",    // gray with glow
-  "Ready to Check": "#ffe066", // yellow with glow
-  "Finished": "#4ade80",      // green with glow
+  Manufacturing: '#3b9cff', // blue with glow
+  'Not Started': '#ff9800', // orange with glow
+  Preparation: '#b983ff', // purple with glow
+  Purchasing: '#bdbdbd', // gray with glow
+  'Ready to Check': '#ffe066', // yellow with glow
+  Finished: '#4ade80', // green with glow
 };
 
 // Custom Tooltip for Pie Chart, positioned to the right or left of the donut
-const CustomPieTooltip = ({ active, payload, coordinate, viewBox }: TooltipProps<ValueType, NameType>) => {
+const CustomPieTooltip = ({
+  active,
+  payload,
+  coordinate,
+  viewBox,
+}: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length && coordinate && viewBox) {
     const { name, value, color } = payload[0].payload;
     // Calculate position: right by default, left if near right edge
@@ -88,20 +93,27 @@ const GlowDefs = () => (
 
 function getGlowFilter(status: string) {
   switch (status) {
-    case "Manufacturing": return "url(#glow-blue)";
-    case "Not Started": return "url(#glow-orange)";
-    case "Preparation": return "url(#glow-purple)";
-    case "Purchasing": return "url(#glow-gray)";
-    case "Ready to Check": return "url(#glow-yellow)";
-    case "Finished": return "url(#glow-green)";
-    default: return undefined;
+    case 'Manufacturing':
+      return 'url(#glow-blue)';
+    case 'Not Started':
+      return 'url(#glow-orange)';
+    case 'Preparation':
+      return 'url(#glow-purple)';
+    case 'Purchasing':
+      return 'url(#glow-gray)';
+    case 'Ready to Check':
+      return 'url(#glow-yellow)';
+    case 'Finished':
+      return 'url(#glow-green)';
+    default:
+      return undefined;
   }
 }
 
 export function PartsProgressPieChart({ data }: PartsProgressPieChartProps) {
   const total = data.reduce((sum, s) => sum + s.value, 0);
   // Map data to use the new badge colors
-  const coloredData = data.map(d => ({ ...d, color: statusColors[d.name] || d.color }));
+  const coloredData = data.map((d) => ({ ...d, color: statusColors[d.name] || d.color }));
 
   return (
     <Card className="card-hover h-full">
@@ -126,7 +138,11 @@ export function PartsProgressPieChart({ data }: PartsProgressPieChartProps) {
                   stroke="none"
                 >
                   {coloredData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} filter={getGlowFilter(entry.name)} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      filter={getGlowFilter(entry.name)}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
@@ -148,10 +164,17 @@ export function PartsProgressPieChart({ data }: PartsProgressPieChartProps) {
               <div key={status.name} className="flex items-center gap-2">
                 <span
                   className="w-3 h-3 rounded-full inline-block shadow"
-                  style={{ backgroundColor: status.color, boxShadow: `0 0 6px 2px ${status.color}55` }}
+                  style={{
+                    backgroundColor: status.color,
+                    boxShadow: `0 0 6px 2px ${status.color}55`,
+                  }}
                 ></span>
-                <span className="text-sm text-gray-700 dark:text-gray-200 flex-1">{status.name}</span>
-                <span className="text-sm font-semibold tabular-nums dark:text-gray-100">{status.value}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-200 flex-1">
+                  {status.name}
+                </span>
+                <span className="text-sm font-semibold tabular-nums dark:text-gray-100">
+                  {status.value}
+                </span>
               </div>
             ))}
           </div>
@@ -159,4 +182,4 @@ export function PartsProgressPieChart({ data }: PartsProgressPieChartProps) {
       </CardContent>
     </Card>
   );
-} 
+}

@@ -1,5 +1,4 @@
-
-import { CalendarRange } from "lucide-react";
+import { CalendarRange } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -7,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 interface DateRangeFilterProps {
   dateRange: string;

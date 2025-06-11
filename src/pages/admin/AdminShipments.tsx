@@ -2,11 +2,24 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Plus, FileEdit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { toast } from "sonner";
+import { toast } from 'sonner';
 import ShipmentForm from '@/components/admin/ShipmentForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -15,35 +28,35 @@ export default function AdminShipments() {
   const { shipments, suppliers, projects, deleteShipment } = useData();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingShipment, setEditingShipment] = useState<null | string>(null);
-  const [search, setSearch] = useState("");
-  const [supplierFilter, setSupplierFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [projectFilter, setProjectFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [search, setSearch] = useState('');
+  const [supplierFilter, setSupplierFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [projectFilter, setProjectFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
   // Get unique suppliers and statuses for filters
   const supplierOptions = useMemo(() => suppliers, [suppliers]);
   const statusOptions = useMemo(() => {
-    const statuses = Array.from(new Set(shipments.map(s => s.status)));
+    const statuses = Array.from(new Set(shipments.map((s) => s.status)));
     return statuses;
   }, [shipments]);
 
   const projectOptions = useMemo(() => projects, [projects]);
-  const typeOptions = ["Ocean Freight", "Air Freight"];
+  const typeOptions = ['Ocean Freight', 'Air Freight'];
 
   // Filtered shipments
-  const filteredShipments = shipments.filter(shipment => {
-    const project = projects.find(p => p.id === shipment.projectId);
-    const supplier = suppliers.find(s => s.id === shipment.supplierId);
+  const filteredShipments = shipments.filter((shipment) => {
+    const project = projects.find((p) => p.id === shipment.projectId);
+    const supplier = suppliers.find((s) => s.id === shipment.supplierId);
     const matchesSearch =
-      search === "" ||
+      search === '' ||
       (project && project.name.toLowerCase().includes(search.toLowerCase())) ||
       (supplier && supplier.name.toLowerCase().includes(search.toLowerCase())) ||
       (shipment.type && shipment.type.toLowerCase().includes(search.toLowerCase()));
-    const matchesSupplier = supplierFilter === "" || shipment.supplierId === supplierFilter;
-    const matchesStatus = statusFilter === "" || shipment.status === statusFilter;
-    const matchesProject = projectFilter === "" || shipment.projectId === projectFilter;
-    const matchesType = typeFilter === "" || shipment.type === typeFilter;
+    const matchesSupplier = supplierFilter === '' || shipment.supplierId === supplierFilter;
+    const matchesStatus = statusFilter === '' || shipment.status === statusFilter;
+    const matchesProject = projectFilter === '' || shipment.projectId === projectFilter;
+    const matchesType = typeFilter === '' || shipment.type === typeFilter;
     return matchesSearch && matchesSupplier && matchesStatus && matchesProject && matchesType;
   });
 
@@ -66,14 +79,14 @@ export default function AdminShipments() {
       toast.error('Failed to delete shipment');
     }
   };
-  
+
   const getProjectName = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
+    const project = projects.find((p) => p.id === projectId);
     return project ? project.name : 'Unknown Project';
   };
-  
+
   const getSupplierName = (supplierId: string) => {
-    const supplier = suppliers.find(s => s.id === supplierId);
+    const supplier = suppliers.find((s) => s.id === supplierId);
     return supplier ? supplier.name : 'Unknown Supplier';
   };
 
@@ -90,47 +103,55 @@ export default function AdminShipments() {
                 type="text"
                 placeholder="Search Shipments..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 className="border rounded px-3 py-2 w-[200px] focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <select
                 value={projectFilter}
-                onChange={e => setProjectFilter(e.target.value)}
+                onChange={(e) => setProjectFilter(e.target.value)}
                 className="border rounded px-3 py-2 w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">All Projects</option>
-                {projectOptions.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                {projectOptions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
                 ))}
               </select>
               <select
                 value={supplierFilter}
-                onChange={e => setSupplierFilter(e.target.value)}
+                onChange={(e) => setSupplierFilter(e.target.value)}
                 className="border rounded px-3 py-2 w-[140px] focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">All Suppliers</option>
-                {supplierOptions.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                {supplierOptions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
               <select
                 value={typeFilter}
-                onChange={e => setTypeFilter(e.target.value)}
+                onChange={(e) => setTypeFilter(e.target.value)}
                 className="border rounded px-3 py-2 w-[130px] focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">All Types</option>
-                {typeOptions.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {typeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
               <select
                 value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
+                onChange={(e) => setStatusFilter(e.target.value)}
                 className="border rounded px-3 py-2 w-[130px] focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">All Status</option>
-                {statusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
                 ))}
               </select>
               <Button
@@ -149,7 +170,9 @@ export default function AdminShipments() {
               <Card className="bg-white text-dm-text rounded-xl shadow-none border-0">
                 <CardHeader className="pb-2">
                   <CardTitle className="hidden">All Shipments</CardTitle>
-                  <CardDescription className="hidden">Manage shipments for all projects</CardDescription>
+                  <CardDescription className="hidden">
+                    Manage shipments for all projects
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   {filteredShipments.length === 0 ? (
@@ -174,10 +197,18 @@ export default function AdminShipments() {
                           <React.Fragment key={shipment.id}>
                             <TableRow>
                               <TableCell className="py-6 text-base">{shipment.type}</TableCell>
-                              <TableCell className="py-6 text-base">{getProjectName(shipment.projectId)}</TableCell>
-                              <TableCell className="py-6 text-base">{getSupplierName(shipment.supplierId)}</TableCell>
-                              <TableCell className="py-6 text-base">{format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}</TableCell>
-                              <TableCell className="py-6 text-base">{format(new Date(shipment.etaDate), 'MMM dd, yyyy')}</TableCell>
+                              <TableCell className="py-6 text-base">
+                                {getProjectName(shipment.projectId)}
+                              </TableCell>
+                              <TableCell className="py-6 text-base">
+                                {getSupplierName(shipment.supplierId)}
+                              </TableCell>
+                              <TableCell className="py-6 text-base">
+                                {format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}
+                              </TableCell>
+                              <TableCell className="py-6 text-base">
+                                {format(new Date(shipment.etaDate), 'MMM dd, yyyy')}
+                              </TableCell>
                               <TableCell className="py-6 text-base">{shipment.status}</TableCell>
                               <TableCell className="py-6 text-base">
                                 <div className="flex space-x-2">
@@ -204,14 +235,40 @@ export default function AdminShipments() {
                             <TableRow className="bg-gray-50">
                               <TableCell colSpan={7} className="py-4 px-6 text-sm text-gray-700">
                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                                  <div><span className="font-semibold">Shipped Date:</span> {format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}</div>
-                                  <div><span className="font-semibold">ETD:</span> {shipment.etdDate ? format(new Date(shipment.etdDate), 'MMM dd, yyyy') : '-'}</div>
-                                  <div><span className="font-semibold">ETA:</span> {format(new Date(shipment.etaDate), 'MMM dd, yyyy')}</div>
-                                  <div><span className="font-semibold">Container No.:</span> {shipment.containerNumber || '-'}</div>
-                                  <div><span className="font-semibold">Container Size:</span> {shipment.containerSize || '-'}</div>
-                                  <div><span className="font-semibold">Container Type:</span> {shipment.containerType || '-'}</div>
-                                  <div><span className="font-semibold">Lock No.:</span> {shipment.lockNumber || '-'}</div>
-                                  <div className="sm:col-span-4"><span className="font-semibold">Notes:</span> {shipment.notes || '-'}</div>
+                                  <div>
+                                    <span className="font-semibold">Shipped Date:</span>{' '}
+                                    {format(new Date(shipment.shippedDate), 'MMM dd, yyyy')}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">ETD:</span>{' '}
+                                    {shipment.etdDate
+                                      ? format(new Date(shipment.etdDate), 'MMM dd, yyyy')
+                                      : '-'}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">ETA:</span>{' '}
+                                    {format(new Date(shipment.etaDate), 'MMM dd, yyyy')}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">Container No.:</span>{' '}
+                                    {shipment.containerNumber || '-'}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">Container Size:</span>{' '}
+                                    {shipment.containerSize || '-'}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">Container Type:</span>{' '}
+                                    {shipment.containerType || '-'}
+                                  </div>
+                                  <div>
+                                    <span className="font-semibold">Lock No.:</span>{' '}
+                                    {shipment.lockNumber || '-'}
+                                  </div>
+                                  <div className="sm:col-span-4">
+                                    <span className="font-semibold">Notes:</span>{' '}
+                                    {shipment.notes || '-'}
+                                  </div>
                                 </div>
                               </TableCell>
                             </TableRow>
