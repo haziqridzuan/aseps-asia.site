@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useData } from '@/contexts/DataContext';
+import { TrendValue } from '@/types/trend';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -21,9 +22,121 @@ import { SupplierSpendingChart } from '@/components/analytics/SupplierSpendingCh
 import { SupplierPerformanceModern } from '@/components/analytics/SupplierPerformanceModern';
 
 export default function Analytics() {
-  const { projects, suppliers, purchaseOrders } = useData();
+  const { projects, suppliers, clients, purchaseOrders } = useData();
   const [dateRange, setDateRange] = useState('all');
   const [selectedProject, setSelectedProject] = useState('all');
+
+  // Initialize trends with default values
+  const [projectTrend, setProjectTrend] = useState<TrendValue>({ value: 0, positive: true });
+  const [poTrend, setPoTrend] = useState<TrendValue>({ value: 0, positive: true });
+  const [completionRateTrend, setCompletionRateTrend] = useState<TrendValue>({ value: 0, positive: true });
+  const [spentTrend, setSpentTrend] = useState<TrendValue>({ value: 0, positive: true });
+
+  // Get date range for trend calculation (last 30 days vs previous 30 days)
+  const today = useMemo(() => new Date(), []);
+  const thirtyDaysAgo = useMemo(() => {
+    const date = new Date();
+    date.setDate(today.getDate() - 30);
+    return date;
+  }, [today]);
+  const sixtyDaysAgo = useMemo(() => {
+    const date = new Date();
+    date.setDate(today.getDate() - 60);
+    return date;
+  }, [today]);
+
+  // Helper function to calculate trend with consistent positive/negative handling
+  const calculateTrend = (currentCount: number, previousCount: number): TrendValue => {
+    // Handle cases where previous count is 0
+    if (previousCount === 0) {
+      if (currentCount > 0) {
+        return { value: 100, positive: true }; // Show +100% for increase from 0
+      }
+      return { value: 0, positive: true }; // Both are 0, show 0%
+    }
+    
+    // Calculate percentage change
+    const change = ((currentCount - previousCount) / previousCount) * 100;
+    const roundedValue = Math.round(Math.abs(change));
+    const isPositive = currentCount >= previousCount;
+    
+    // Special case: if change is 0%, show it as positive (no change)
+    const finalIsPositive = roundedValue === 0 ? true : isPositive;
+    
+    // Return the raw value and let the display component handle formatting
+    return {
+      value: isPositive ? roundedValue : -roundedValue,
+      positive: finalIsPositive
+    };
+  };
+
+  // Calculate trends in a useEffect to prevent infinite re-renders
+  useEffect(() => {
+    // Calculate trend for total projects
+    const currentPeriodProjects = projects.filter(p => {
+      const projectDate = new Date(p.startDate);
+      return projectDate >= thirtyDaysAgo && projectDate <= today;
+    }).length;
+    
+    const previousPeriodProjects = projects.filter(p => {
+      const projectDate = new Date(p.startDate);
+      return projectDate >= sixtyDaysAgo && projectDate < thirtyDaysAgo;
+    }).length;
+    
+    setProjectTrend(calculateTrend(currentPeriodProjects, previousPeriodProjects));
+
+    // Calculate trend for total POs
+    const currentPeriodPOs = purchaseOrders.filter(po => {
+      const poDate = new Date(po.issuedDate || new Date());
+      return poDate >= thirtyDaysAgo && poDate <= today;
+    }).length;
+    
+    const previousPeriodPOs = purchaseOrders.filter(po => {
+      const poDate = new Date(po.issuedDate || new Date());
+      return poDate >= sixtyDaysAgo && poDate < thirtyDaysAgo;
+    }).length;
+    
+    setPoTrend(calculateTrend(currentPeriodPOs, previousPeriodPOs));
+
+    // Calculate trend for completion rate
+    const currentPeriodCompletedProjects = projects.filter(p => {
+      const endDate = p.endDate ? new Date(p.endDate) : null;
+      return p.status === 'Completed' && endDate && 
+             endDate >= thirtyDaysAgo && endDate <= today;
+    }).length;
+    
+    const previousPeriodCompletedProjects = projects.filter(p => {
+      const endDate = p.endDate ? new Date(p.endDate) : null;
+      return p.status === 'Completed' && endDate && 
+             endDate >= sixtyDaysAgo && endDate < thirtyDaysAgo;
+    });
+
+    if (currentPeriodCompletedProjects > 0) {
+      const newCompletionRateTrend = calculateTrend(
+        currentPeriodCompletedProjects,
+        previousPeriodCompletedProjects.length
+      );
+      setCompletionRateTrend(newCompletionRateTrend);
+    }
+
+    // Calculate trend for total spent
+    const currentPeriodSpent = purchaseOrders
+      .filter(po => {
+        const poDate = new Date(po.issuedDate || new Date());
+        return poDate >= thirtyDaysAgo && poDate <= today;
+      })
+      .reduce((sum, po) => sum + (po.amount || 0), 0);
+      
+    const previousPeriodSpent = purchaseOrders
+      .filter(po => {
+        const poDate = new Date(po.issuedDate || new Date());
+        return poDate >= sixtyDaysAgo && poDate < thirtyDaysAgo;
+      })
+      .reduce((sum, po) => sum + (po.amount || 0), 0);
+      
+    const newSpentTrend = calculateTrend(currentPeriodSpent, previousPeriodSpent);
+    setSpentTrend(newSpentTrend);
+  }, [projects, purchaseOrders, thirtyDaysAgo, sixtyDaysAgo, today]);
 
   // Filter data based on date range
   const filterByDateRange = (date: string) => {
@@ -61,9 +174,18 @@ export default function Analytics() {
   // Filter projects
   const filteredProjects = projects.filter((project) => filterByDateRange(project.startDate));
 
-  // Filter POs by date range and project
-  const filteredPOs = purchaseOrders.filter(
-    (po) => filterByDateRange(po.issuedDate) && filterByProject(po.projectId),
+  // Filter and deduplicate POs by poNumber (count each PO number only once regardless of project or other fields)
+  const filteredPOs = Array.from(
+    purchaseOrders
+      .filter((po) => filterByDateRange(po.issuedDate) && filterByProject(po.projectId))
+      .reduce((map, po) => {
+        // Use poNumber as the unique key
+        if (!map.has(po.poNumber)) {
+          map.set(po.poNumber, po);
+        }
+        return map;
+      }, new Map())
+      .values()
   );
 
   // Project status data for chart
@@ -172,6 +294,9 @@ export default function Analytics() {
         )
       : 0;
 
+  // Calculate total spent for the current period
+  const totalSpent = spentByProject.reduce((sum, item) => sum + item.spent, 0);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -192,12 +317,25 @@ export default function Analytics() {
 
       {/* Summary Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Projects" value={filteredProjects.length} />
-        <StatCard title="Total POs" value={filteredPOs.length} />
-        <StatCard title="Completion Rate" value={`${completionRate}%`} />
+        <StatCard 
+          title="Total Projects" 
+          value={filteredProjects.length} 
+          trend={projectTrend}
+        />
+        <StatCard 
+          title="Total POs" 
+          value={filteredPOs.length} 
+          trend={poTrend}
+        />
+        <StatCard 
+          title="Completion Rate" 
+          value={`${completionRate}%`} 
+          trend={completionRateTrend}
+        />
         <StatCard
           title="Total Spent"
-          value={`$${spentByProject.reduce((sum, item) => sum + item.spent, 0).toLocaleString()}`}
+          value={`$${totalSpent.toLocaleString()}`}
+          trend={spentTrend}
         />
       </div>
 

@@ -34,17 +34,20 @@ export default function Projects() {
   };
 
   // Filter projects based on search and status
-  const filteredProjects = projects.filter((project) => {
-    const matchesSearch =
-      search === '' ||
-      project.name.toLowerCase().includes(search.toLowerCase()) ||
-      getClientName(project.clientId).toLowerCase().includes(search.toLowerCase()) ||
-      project.location.toLowerCase().includes(search.toLowerCase());
+  const filteredProjects = projects
+    .filter((project) => {
+      const matchesSearch =
+        search === '' ||
+        project.name.toLowerCase().includes(search.toLowerCase()) ||
+        getClientName(project.clientId).toLowerCase().includes(search.toLowerCase()) ||
+        project.location.toLowerCase().includes(search.toLowerCase());
 
-    const matchesStatus = statusFilter === null || project.status === statusFilter;
+      const matchesStatus = statusFilter === null || project.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    })
+    // Sort projects by name in descending order (Z to A)
+    .sort((a, b) => b.name.localeCompare(a.name));
 
   // Function to get badge color based on status
   const getStatusColor = (status: string) => {

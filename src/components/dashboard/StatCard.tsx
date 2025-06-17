@@ -1,15 +1,13 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
+import { TrendValue, isNumericTrend } from '@/types/trend';
 
 interface StatCardProps {
   title: string;
   value: string | number;
   icon?: ReactNode;
-  trend?: {
-    value: number;
-    positive: boolean;
-  };
+  trend?: TrendValue;
   className?: string;
 }
 
@@ -30,8 +28,15 @@ export function StatCard({ title, value, icon, trend, className }: StatCardProps
                     trend.positive ? 'text-green-500' : 'text-red-500',
                   )}
                 >
-                  {trend.positive ? '+' : ''}
-                  {trend.value}%
+                  {isNumericTrend(trend) ? (
+                    <>
+                      {trend.positive && trend.value > 0 ? '+' : ''}
+                      {trend.value}%
+                    </>
+                  ) : (
+                    // For string values, assume they're already formatted
+                    trend.value
+                  )}
                 </span>
                 <span className="text-xs text-muted-foreground ml-1">vs last month</span>
               </div>

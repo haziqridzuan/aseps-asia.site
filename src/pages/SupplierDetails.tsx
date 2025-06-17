@@ -55,9 +55,29 @@ export default function SupplierDetails() {
     pos.every((po) => po.status === 'Completed'),
   ).length;
 
-  // Get projects involving this supplier
-  const projectIds = [...new Set(supplierPOs.map((po) => po.projectId))];
-  const supplierProjects = projects.filter((p) => projectIds.includes(p.id));
+  // Get projects involving this supplier with calculated progress
+  const projectProgress = supplierPOs.reduce((acc, po) => {
+    if (!acc[po.projectId]) {
+      acc[po.projectId] = [];
+    }
+    // Calculate PO progress based on parts if available, otherwise use PO progress
+    const poProgress = po.parts && po.parts.length > 0
+      ? po.parts.reduce((sum, part) => sum + (part.progress || 0), 0) / po.parts.length
+      : po.progress || 0;
+    acc[po.projectId].push(poProgress);
+    return acc;
+  }, {} as Record<string, number[]>);
+
+  // Create supplier projects with calculated average progress
+  const supplierProjects = projects
+    .filter((p) => projectProgress[p.id])
+    .map((project) => ({
+      ...project,
+      progress: Math.round(
+        projectProgress[project.id].reduce((a, b) => a + b, 0) /
+        projectProgress[project.id].length,
+      ),
+    }));
 
   // Render stars for rating
   const renderRating = (rating: number) => {
@@ -222,17 +242,19 @@ export default function SupplierDetails() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                      <Badge className={getStatusColor(project.status)}>
+                        {project.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-[100px] bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-primary h-2 rounded-full"
+                            className={`h-2 rounded-full ${getStatusColor(project.status)}`}
                             style={{ width: `${project.progress}%` }}
-                          ></div>
+                          />
                         </div>
-                        <span className="text-sm">{project.progress}%</span>
+                        <span className="text-sm font-medium">{project.progress}%</span>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -283,7 +305,9 @@ export default function SupplierDetails() {
                   ),
                 ).map((group, idx) => {
                   const project = projects.find((p) => p.id === group.projectId);
-                  const statuses = [...new Set(group.pos.map((po) => po.status))];
+                  // If any PO is 'Active', show 'Active' status only, otherwise show unique statuses
+                  const hasActive = group.pos.some(po => po.status === 'Active');
+                  const statuses = hasActive ? ['Active'] : [...new Set(group.pos.map((po) => po.status))];
                   return (
                     <TableRow
                       key={group.poNumber + group.projectId + idx}
@@ -304,11 +328,15 @@ export default function SupplierDetails() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {statuses.map((status, i) => (
-                          <Badge key={status + i} className={getStatusColor(status)}>
-                            {status}
-                          </Badge>
-                        ))}
+                        {statuses.map((status, i) => {
+                          // For 'Completed' status, only show if there are no 'Active' statuses
+                          if (status === 'Completed' && hasActive) return null;
+                          return (
+                            <Badge key={status + i} className={getStatusColor(status)}>
+                              {status}
+                            </Badge>
+                          );
+                        })}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">

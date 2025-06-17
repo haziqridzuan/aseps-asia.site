@@ -3,6 +3,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { ProjectStatusChart } from '@/components/dashboard/ProjectStatusChart';
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines';
 import { RecentProjects } from '@/components/dashboard/RecentProjects';
+import { TrendValue } from '@/types/trend';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartBar, Package, File, Users } from 'lucide-react';
 
@@ -17,61 +18,171 @@ export default function Dashboard() {
     return today > deadline ? 'Delayed' : po.status;
   };
 
-  // Calculate dashboard metrics
+  // Get date range for trend calculation (last 30 days vs previous 30 days)
+  const today = new Date();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(today.getDate() - 60);
+
+  // Helper function to calculate trend with consistent positive/negative handling
+  const calculateTrend = (currentCount: number, previousCount: number, isActivePO = false): TrendValue => {
+    // Special handling for Active POs - always show positive if there are any Active POs
+    if (isActivePO && (currentCount > 0 || previousCount > 0)) {
+      // If current is 0 but previous was > 0, show 100% (positive)
+      if (currentCount === 0 && previousCount > 0) {
+        return { value: 100, positive: true };
+      }
+      // If current > 0 and previous was 0, show 100% (positive)
+      if (currentCount > 0 && previousCount === 0) {
+        return { value: 100, positive: true };
+      }
+      // If both > 0, show 0% (no change, positive)
+      return { value: 0, positive: true };
+    }
+    
+    // Handle cases where previous count is 0
+    if (previousCount === 0) {
+      if (currentCount > 0) {
+        return { value: 100, positive: true }; // Show 100% increase
+      }
+      return { value: 0, positive: true }; // Both are 0, show 0%
+    }
+    
+    // Calculate percentage change
+    const change = ((currentCount - previousCount) / previousCount) * 100;
+    const roundedValue = Math.round(Math.abs(change));
+    const isPositive = currentCount >= previousCount;
+    
+    // Return the raw value and let the display component handle formatting
+    const formattedValue = isPositive ? roundedValue : -roundedValue;
+    
+    // Return the raw value and let the display component handle formatting
+    return {
+      value: formattedValue,
+      positive: isPositive
+    } as TrendValue;
+  };
+
+  // Calculate project metrics
   const activeProjects = projects.filter((p) => p.status === 'In Progress').length;
   const completedProjects = projects.filter((p) => p.status === 'Completed').length;
+  
+  // Total Projects Trend: Projects started in the last 30 days vs previous 30-60 days
+  const currentPeriodProjects = projects.filter(p => {
+    const projectDate = new Date(p.startDate);
+    return projectDate >= thirtyDaysAgo && projectDate <= today;
+  }).length;
+  
+  const previousPeriodProjects = projects.filter(p => {
+    const projectDate = new Date(p.startDate);
+    return projectDate >= sixtyDaysAgo && projectDate < thirtyDaysAgo;
+  }).length;
+  
+  const projectTrend = calculateTrend(currentPeriodProjects, previousPeriodProjects);
 
-  // Count unique PO numbers for each status (using effective status)
+  // Active Suppliers (no trend)
+  const activeSuppliers = suppliers.length;
+
+  // Clients (no trend)
+  const currentClients = clients.length;
+
+  // Calculate PO metrics
   const uniquePONumbers = [...new Set(purchaseOrders.map((po) => po.poNumber))];
+  
+  // Active POs
   const activePOCount = uniquePONumbers.filter((poNumber) =>
     purchaseOrders.some((po) => po.poNumber === poNumber && getEffectiveStatus(po) === 'Active'),
   ).length;
-  // Count a PO as completed only if all POs with the same PO number are completed
+  
+  // Active PO Trend: POs issued in the last 30 days vs previous 30-60 days
+  const currentPeriodActivePOs = purchaseOrders
+    .filter(po => {
+      const poDate = new Date(po.issuedDate || new Date());
+      return poDate >= thirtyDaysAgo && poDate <= today && getEffectiveStatus(po) === 'Active';
+    })
+    .map(po => po.poNumber);
+  
+  const previousPeriodActivePOs = purchaseOrders
+    .filter(po => {
+      const poDate = new Date(po.issuedDate || new Date());
+      return poDate >= sixtyDaysAgo && poDate < thirtyDaysAgo && getEffectiveStatus(po) === 'Active';
+    })
+    .map(po => po.poNumber);
+  
+  const currentActivePOs = [...new Set(currentPeriodActivePOs)].length;
+  const previousActivePOs = [...new Set(previousPeriodActivePOs)].length;
+  const activePOTrend = calculateTrend(currentActivePOs, previousActivePOs, true);
+
+  // Completed POs
   const completedPOCount = uniquePONumbers.filter((poNumber) =>
     purchaseOrders
       .filter((po) => po.poNumber === poNumber)
       .every((po) => getEffectiveStatus(po) === 'Completed'),
   ).length;
+  
+  // Completed PO Trend: POs completed in the last 30 days vs previous 30-60 days
+  const currentPeriodCompletedPOs = purchaseOrders
+    .filter(po => {
+      const completionDate = po.completionDate ? new Date(po.completionDate) : null;
+      return completionDate && completionDate >= thirtyDaysAgo && completionDate <= today && 
+             getEffectiveStatus(po) === 'Completed';
+    })
+    .map(po => po.poNumber);
+  
+  const previousPeriodCompletedPOs = purchaseOrders
+    .filter(po => {
+      const completionDate = po.completionDate ? new Date(po.completionDate) : null;
+      return completionDate && completionDate >= sixtyDaysAgo && completionDate < thirtyDaysAgo && 
+             getEffectiveStatus(po) === 'Completed';
+    })
+    .map(po => po.poNumber);
+  
+  const completedPOTrend = calculateTrend(
+    [...new Set(currentPeriodCompletedPOs)].length,
+    [...new Set(previousPeriodCompletedPOs)].length
+  );
+
+  // Delayed POs (keep current calculation)
   const delayedPOCount = uniquePONumbers.filter((poNumber) =>
     purchaseOrders.some((po) => po.poNumber === poNumber && getEffectiveStatus(po) === 'Delayed'),
   ).length;
+  
+  // Previous period delayed POs (for trend calculation)
+  const previousDelayedPOs = [...new Set(purchaseOrders
+    .filter(po => {
+      const poDate = new Date(po.issuedDate || new Date());
+      return poDate >= sixtyDaysAgo && poDate < thirtyDaysAgo;
+    })
+    .filter(po => getEffectiveStatus(po) === 'Delayed')
+    .map(po => po.poNumber)
+  )].length;
+  const delayedPOTrend = calculateTrend(delayedPOCount, previousDelayedPOs);
 
-  const activeSuppliers = suppliers.length;
-
-  // --- Delayed POs trend calculation ---
-  // Helper: get month and year from date
-  const getMonthYear = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.getFullYear() + '-' + (d.getMonth() + 1);
-  };
-  // Get last full month and previous month
-  const today = new Date();
-  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const prevMonth = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-  const lastMonthStr = lastMonth.getFullYear() + '-' + (lastMonth.getMonth() + 1);
-  const prevMonthStr = prevMonth.getFullYear() + '-' + (prevMonth.getMonth() + 1);
-  // Count delayed POs with deadline in last month and previous month
-  const delayedPOsLastMonth = purchaseOrders.filter((po) => {
-    return getEffectiveStatus(po) === 'Delayed' && getMonthYear(po.deadline) === lastMonthStr;
-  });
-  const delayedPOsPrevMonth = purchaseOrders.filter((po) => {
-    return getEffectiveStatus(po) === 'Delayed' && getMonthYear(po.deadline) === prevMonthStr;
-  });
-  const lastMonthCount = delayedPOsLastMonth.length;
-  const prevMonthCount = delayedPOsPrevMonth.length;
-  // Calculate trend percentage
-  let delayedTrendValue = 0;
-  let delayedTrendPositive = false;
-  if (prevMonthCount === 0 && lastMonthCount > 0) {
-    delayedTrendValue = 100;
-    delayedTrendPositive = false;
-  } else if (prevMonthCount === 0 && lastMonthCount === 0) {
-    delayedTrendValue = 0;
-    delayedTrendPositive = false;
-  } else {
-    delayedTrendValue = Math.round(((lastMonthCount - prevMonthCount) / prevMonthCount) * 100);
-    delayedTrendPositive = delayedTrendValue < 0;
+  // Initialize trends with default values
+  let completionRateTrend: TrendValue = { value: '0', positive: true };
+  const currentPeriodCompletedProjects = projects.filter(p => {
+    const endDate = p.endDate ? new Date(p.endDate) : null;
+    return p.status === 'Completed' && endDate && 
+           endDate >= thirtyDaysAgo && endDate <= today;
+  }).length;
+  
+  const previousPeriodCompletedProjects = projects.filter(p => {
+    const endDate = p.endDate ? new Date(p.endDate) : null;
+    return p.status === 'Completed' && endDate && 
+           endDate >= sixtyDaysAgo && endDate < thirtyDaysAgo;
+  }).length;
+  
+  if (currentPeriodCompletedProjects > 0) {
+    completionRateTrend = calculateTrend(
+      currentPeriodCompletedProjects,
+      previousPeriodCompletedProjects
+    );
   }
+  
+  const currentCompletionRate = projects.length > 0 
+    ? Math.round((completedProjects / projects.length) * 100) 
+    : 0;
 
   // Project status data for chart
   const projectStatusData = [
@@ -121,34 +232,45 @@ export default function Dashboard() {
           title="Total Projects"
           value={projects.length}
           icon={<File className="h-6 w-6" />}
-          trend={{ value: 12, positive: true }}
+          trend={projectTrend}
         />
         <StatCard
           title="Active Suppliers"
           value={activeSuppliers}
           icon={<Package className="h-6 w-6" />}
-          trend={{ value: 5, positive: true }}
         />
         <StatCard
           title="Active Projects"
           value={activeProjects}
           icon={<File className="h-6 w-6" />}
         />
-        <StatCard title="Clients" value={clients.length} icon={<Users className="h-6 w-6" />} />
+        <StatCard 
+          title="Clients" 
+          value={clients.length} 
+          icon={<Users className="h-6 w-6" />}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Active POs" value={activePOCount} trend={{ value: 8, positive: true }} />
-        <StatCard title="Completed POs" value={completedPOCount} />
+        <StatCard 
+          title="Active POs" 
+          value={activePOCount} 
+          trend={activePOTrend} 
+        />
+        <StatCard 
+          title="Completed POs" 
+          value={completedPOCount} 
+          trend={completedPOTrend}
+        />
         <StatCard
           title="Delayed POs"
           value={delayedPOCount}
-          trend={{ value: Math.abs(delayedTrendValue), positive: delayedTrendPositive }}
+          trend={delayedPOTrend}
         />
         <StatCard
           title="Completion Rate"
-          value={`${Math.round((completedProjects / projects.length) * 100) || 0}%`}
-          trend={{ value: 7, positive: true }}
+          value={`${currentCompletionRate}%`}
+          trend={completionRateTrend}
         />
       </div>
 
